@@ -22,7 +22,7 @@ class Game
     end
 
     def options
-      puts "you can move to; #{@move_options.join(', ')}"
+      puts "\nYou can move to; #{@move_options.join(', ')}\n"
     end
 
     def move
@@ -31,10 +31,10 @@ class Game
 
   end
 
-  @cell1 = Room.new("Your cell", "Your prison cell", 1, @move_options = ["Cell 2", "Cell 3", "Prison hallway"])
-  @cell2 = Room.new("Cell 2", "Prison cell next to yours", 2, @move_options = ["Your Cell", "Cell 3", "Prison Hallway"])
-  @cell3 = Room.new("Cell 3", "Prison cell opposite yours", 3, @move_options = ["Your Cell", "Cell 2", "Prison Hallway"])
-  @prison_hallway = Room.new("Prison Hallway", "You are in the prison hallway", 4, @move_options = ["Your Cell", "Cell 2", "Cell 3"])
+  @cell1 = Room.new("Your Cell", "It's a dirty room with no windows. It contains a bed, chair and desk. There's a mouse in the corner of the room\n\n", 1, @move_options = ["Cell 2", "Cell 3", "Prison hallway"])
+  @cell2 = Room.new("Cell 2", "It's the prison cell next to yours. It's the same as yours but there's a female prison inside\n\n", 2, @move_options = ["Your Cell", "Cell 3", "Prison Hallway"])
+  @cell3 = Room.new("Cell 3", "It's the prison cell opposite yours. There's nothing in it except a bed, chair and desk\n\n", 3, @move_options = ["Your Cell", "Cell 2", "Prison Hallway"])
+  @prison_hallway = Room.new("the Prison Hallway", "You are in the prison hallway. There's your cell and two others. At the end sits a prison guard. The prison guard is asleep\n\n", 4, @move_options = ["Your Cell", "Cell 2", "Cell 3"])
 
 
 # starting game
@@ -45,7 +45,7 @@ class Game
   @@description = $description
 
   while @game_complete == false
-    puts "where would you like to move to? (type 'options' to see your move options)"
+    puts "You are in #{@room.name}. Where would you like to move to? (type 'options' to see your move options)"
     input = gets.chomp.downcase
 
     if input == "options"
@@ -55,35 +55,39 @@ class Game
       @game_complete = true 
 
     elsif input == "your cell" && @room == @cell1
-      puts "You are already in Your Cell"
+      puts "\nYou are already in Your Cell\n"
 
     elsif input == "cell 2" && @room == @cell2
-      puts "You are already in Cell 2"
+      puts "\nYou are already in Cell 2\n"
 
     elsif input == "cell 3" && @room == @cell3
-      puts "You are already in Cell 3"
+      puts "\nYou are already in Cell 3\n"
 
     elsif input == "prison hallway" && @room == @prison_hallway
-      puts "You are already in the Prison Hallway"
+      puts "\nYou are already in the Prison Hallway\n"
 
     elsif input == "your cell" && @room != @cell1
       @room = @cell1
-      puts "You have moved to Your Cell"
+      puts "\nYou have moved to Your Cell\n"
+      @room.describe
 
     elsif input == "cell 2" && @room != @cell2
       @room = @cell2
-      puts "You have moved to Cell 2"
+      puts "\nYou have moved to Cell 2\n"
+      @room.describe
 
     elsif input == "cell 3" && @room != @cell3
       @room = @cell3
-      puts "You have moved to Cell 3"
+      puts "\nYou have moved to Cell 3\n"
+      @room.describe
 
     elsif input == "prison hallway" && @room != @prison_hallway
       @room = @prison_hallway
-      puts "You have moved to the Prison Hallway"
+      puts "\nYou have moved to the Prison Hallway\n"
+      @room.describe
 
     else 
-      puts "I don't know that command"
+      puts "\nI don't know that command\n\n"
     end
 
   end
