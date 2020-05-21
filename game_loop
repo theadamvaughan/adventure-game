@@ -3,13 +3,17 @@
 
 class Game
 
-  class Room
-    attr_accessor(:name, :description, :room_id, :isLocked)
+#  generating the rooms
 
-    def initialize(name, description, room_id)
+  class Room
+    attr_accessor(:name, :description, :room_id, :isLocked, :move_options)
+
+    def initialize(name, description, room_id, move_options)
       @name = name
       @description = description
       @room_id = room_id
+      @move_options = Array.new
+      @move_options.push(move_options)
       @isLocked = false
     end
 
@@ -17,27 +21,41 @@ class Game
       puts @description
     end
 
-    def move
-      puts "you can move to; "
+    def options
+      puts "you can move to; #{@move_options.join(', ')}"
     end
+
+    def move
+      
+    end
+
   end
 
-  @cell1 = Room.new("Your cell", "Your prison cell", 1)
-  @cell2 = Room.new("Cell 2", "Prison cell next to yours", 2)
-  @cell3 = Room.new("Cell 3", "Prison cell opposite yours", 3)
-  @prison_hallway = Room.new("Prison Hallway", "You are in the prison hallway", 4)
+  @cell1 = Room.new("Your cell", "Your prison cell", 1, @move_options = ["Cell 2", "Cell 3", "Prison hallway"])
+  @cell2 = Room.new("Cell 2", "Prison cell next to yours", 2, @move_options = ["Your Cell", "Cell 3", "Prison Hallway"])
+  @cell3 = Room.new("Cell 3", "Prison cell opposite yours", 3, @move_options = ["Your Cell", "Cell 2", "Prison Hallway"])
+  @prison_hallway = Room.new("Prison Hallway", "You are in the prison hallway", 4, @move_options = ["Your Cell", "Cell 2", "Cell 3"])
+
+
+# starting game
+
 
   @game_complete = false
   @room = @cell1
   @@description = $description
 
   while @game_complete == false
-    puts "where would you like to move to?"
-    input = gets.chomp
-    if input == "x"
-      puts @room.describe
-    else input = "end"
-      @game_complete = true
+    puts "where would you like to move to? (type 'options' to see your move options)"
+    input = gets.chomp.downcase
+
+    if input == "options"
+      puts @room.options
+
+    elsif input == "end"
+      @game_complete = true 
+
+    else 
+      puts "I don't know that command"
     end
 
 
