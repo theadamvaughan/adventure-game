@@ -54,10 +54,37 @@ class Game
     elsif input == "end"
       @game_complete = true 
 
+    elsif input == "your cell" && @room == @cell1
+      puts "You are already in Your Cell"
+
+    elsif input == "cell 2" && @room == @cell2
+      puts "You are already in Cell 2"
+
+    elsif input == "cell 3" && @room == @cell3
+      puts "You are already in Cell 3"
+
+    elsif input == "prison hallway" && @room == @prison_hallway
+      puts "You are already in the Prison Hallway"
+
+    elsif input == "your cell" && @room != @cell1
+      @room = @cell1
+      puts "You have moved to Your Cell"
+
+    elsif input == "cell 2" && @room != @cell2
+      @room = @cell2
+      puts "You have moved to Cell 2"
+
+    elsif input == "cell 3" && @room != @cell3
+      @room = @cell3
+      puts "You have moved to Cell 3"
+
+    elsif input == "prison hallway" && @room != @prison_hallway
+      @room = @prison_hallway
+      puts "You have moved to the Prison Hallway"
+
     else 
       puts "I don't know that command"
     end
-
 
   end
 
