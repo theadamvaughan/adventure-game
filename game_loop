@@ -36,7 +36,7 @@ class Game
   @cell1 = Room.new("Your Cell", "It's a dirty room with no windows. It contains a bed, chair and desk. There's a mouse in the corner of the room\n\n", false)
   @cell2 = Room.new("Cell 2", "It's the prison cell next to yours. It's the same as yours but there's a female prison inside\n\n", false)
   @cell3 = Room.new("Cell 3", "It's the prison cell opposite yours. There's nothing in it except a bed, chair and desk\n\n", false)
-  @prison_hallway = Room.new("the Prison Hallway", "You are in the prison hallway. There's your cell and two others. At the end sits a prison guard. The prison guard is asleep\n\n", false)
+  @prison_hallway = Room.new("the Prison Hallway", "At one end of the Prison Hallway is your cell and two others. At the other end sits a prison guard. The prison guard is asleep\n\n", false)
 
 # code for generating items
 
@@ -48,12 +48,22 @@ class Game
   @inventory = []
   @game_complete = false
   @rooms = [@cell1, @cell2, @cell3, @prison_hallway].freeze
-  @current_room_index = 2
+  @current_room_index = 0
   @room_id = [1, 2, 3, 4]
+  @starting_game_text = true
   
 # Starting game
 
   while @game_complete == false
+
+    if @starting_game_text == true
+      puts "You wake up in a prison cell. You have no idea how you got there."
+      puts "#{current_room.description}"
+      puts "There's two other cells, one opposite yours, and one next to you."
+      puts "They are at the end of a prison hallway. At the other end is the exit."
+      puts "There's a guard blocking the exit. He's sitting next to a desk and is asleep.\n\n"
+      @starting_game_text = false
+    end
 
     puts "You are in #{current_room.name}"
     puts "Where you like to move to?\n\n"
