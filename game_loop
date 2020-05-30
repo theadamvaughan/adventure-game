@@ -69,12 +69,26 @@ def player_move
   end
 end
 
+def current_room_items
+    @current_room_items.each_with_index do |item_name, number|
+    puts "[#{number + 1}] #{item_name.name}"
+  end
+end
+
+def room_items_description
+   puts "Here's what's in #{current_room.name};"
+   pause(1)
+    @current_room_items.each_with_index do |room_item_name, room_item_index|
+      print "[#{room_item_index + 1}] #{room_item_name.name} - #{room_item_name.description}\n"
+    end
+end
+
 def look_at
   pause(0.5)
   puts "\nWhat would you like to look at?"
   pause(1)
   puts "[I] Inventory item"
-  puts "[R] Room item"
+  puts "[R] Whats in the room"
 
   input = gets.chomp
   pause(0.5)
@@ -82,7 +96,7 @@ def look_at
     inventory_description
 
   elsif input.downcase == "r"
-    puts "I need to added room items"
+    room_items_description
 
   elsif input.downcase == "q"
     @game_complete = true
@@ -95,6 +109,10 @@ def look_at
 
 end
 
+def pick_up
+  puts "here's what's in your room;"
+  current_room_items
+end
 
 def inventory_items
   puts "\nHere are your inventory items;"
@@ -103,7 +121,6 @@ def inventory_items
     print "[#{item_index + 1}] #{item_name.name}\n"
   end
 end
-
 
 def inventory_description
    puts "Here's your inventory;"
@@ -115,19 +132,29 @@ end
 
 def starting_text
   puts "You wake up in a prison cell. You have no idea how you got there."
-  pause(3)
+  # pause(3)
   puts "#{current_room.description}"
-  pause(4)
+  # pause(4)
   puts "There's two other cells, one opposite yours, and one next to you."
-  pause(4)
+  # pause(4)
   puts "They are at the end of a prison hallway. At the other end is the exit."
-  pause(5)
+  # pause(5)
   puts "There's a guard blocking the exit. He's sitting next to a desk and is asleep."
-  pause(5)
+  # pause(5)
   @starting_game_text = false
 end
 
 class Game
+
+# code for generating items
+
+  @mouse = Item.new("Mouse", "A cute tiny mouse. Who could be afraid of this?", 1, true)
+  @desk = Item.new("Desk", "A metal desk. Flat metal top and 4 metal legs.", 2, false)
+  @chair = Item.new("Chair", "A metal chair with 4 legs", 3, false)
+  @bed = Item.new("Bed", "A metal bed with a thin pillow and a tatty waffer think blanket", 4, false)
+  @cheese_sandwich = Item.new("Cheese_sandwich", "A mouldy cheese sandwich", 5, true)
+  @prison_guard = Item.new("Prison Guard", "He's a large man, clearly been eating too many pies", 6, false)
+  @prison_keys = Item.new("Prison Keys", "A bunch of keys that open all the cells and the cell room main door", 7, true)
 
 #  generating the rooms
 
@@ -136,22 +163,21 @@ class Game
   @cell3 = Room.new("Cell 3", "It's the prison cell opposite yours. There's nothing in it except a bed, chair and desk", false)
   @prison_hallway = Room.new("the Prison Hallway", "At one end of the Prison Hallway is your cell and two others. At the other end sits a prison guard. The prison guard is asleep", false)
 
-# code for generating items
-
-  @mouse = Item.new("Mouse", "A cute tiny mouse. Who could be afraid of this?", 1, true)
-  @desk = Item.new("Desk", "A metal desk. Flat metal top and 4 metal legs.", 2, false)
-  @chair = Item.new("Chair", "A metal chair with 4 legs", 3, false)
-  @bed = Item.new("Bed", "A metal bed with a thin pillow and a tatty waffer think blanket", 4, false)
-
 # initial game state
 
-  @cell1_items = [@mouse, @desk, @chair, @bed]
-  @inventory = [@mouse, @desk].freeze
+  @inventory = [@mouse].freeze
   @game_complete = false
   @rooms = [@cell1, @cell2, @cell3, @prison_hallway].freeze
   @current_room_index = 0
   @room_id = [1, 2, 3, 4]
   @starting_game_text = true
+
+  @cell1_items = [@mouse, @desk, @chair, @bed]
+  @cell2_items = [@desk, @chair, @bed]
+  @cell3_items = [@desk, @chair, @bed, @cheese_sandwich]
+  @prison_hallway_items = [@desk, @prison_guard, @prison_keys]
+
+  @current_room_items = [@mouse, @desk, @chair, @bed]
   
 # Starting game
 
@@ -183,7 +209,7 @@ class Game
         player_move
 
       elsif input.downcase == "p"
-        # Add code to pick up
+        pick_up
 
       elsif input.downcase == "l"
         look_at
