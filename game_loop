@@ -140,10 +140,12 @@ class Game
 
   @mouse = Item.new("Mouse", "A cute tiny mouse. Who could be afraid of this?", 1, true)
   @desk = Item.new("Desk", "A metal desk. Flat metal top and 4 metal legs.", 2, false)
+  @chair = Item.new("Chair", "A metal chair with 4 legs", 3, false)
+  @bed = Item.new("Bed", "A metal bed with a thin pillow and a tatty waffer think blanket", 4, false)
 
 # initial game state
 
-  @room_items = [@mouse, @desk]
+  @cell1_items = [@mouse, @desk, @chair, @bed]
   @inventory = [@mouse, @desk].freeze
   @game_complete = false
   @rooms = [@cell1, @cell2, @cell3, @prison_hallway].freeze
