@@ -78,6 +78,7 @@ class Game
 # code for generating items
 
   @mouse = Item.new("Mouse", "A cute tiny mouse. Who could be afraid of this?", 1, true)
+  @desk = Items.new("Desk", "It's a normal desk with a wooden top and 4 legs", 2, false)
 
 # initial game state
 
