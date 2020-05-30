@@ -2,59 +2,101 @@ class Room
 
   attr_accessor(:name, :description, :isLocked)
 
-  def initialize(name, description, room_id)
+  def initialize(name, description, isLocked)
     @name = name
     @description = description
-    @isLocked = false
+    @isLocked = isLocked
   end
 
 end
+
+class Item
+  attr_accessor(:name, :description, :item_id, :canBePickedUp, :isPickedUp)
+
+  def initialize(name, description, item_id, canBePickedUp)
+    @name = name
+    @description = description
+    @item_id = item_id
+    @canBePickedUp = canBePickedUp
+    @isPickedUp = false
+  end
+end
+
+# current room method to call the room the user is in 
+
+def current_room 
+  @rooms[@current_room_index]
+end
+
 
 class Game
 
 #  generating the rooms
 
-  @cell1 = Room.new("Your Cell", "It's a dirty room with no windows. It contains a bed, chair and desk. There's a mouse in the corner of the room\n\n")
-  @cell2 = Room.new("Cell 2", "It's the prison cell next to yours. It's the same as yours but there's a female prison inside\n\n")
-  @cell3 = Room.new("Cell 3", "It's the prison cell opposite yours. There's nothing in it except a bed, chair and desk\n\n")
-  @prison_hallway = Room.new("the Prison Hallway", "You are in the prison hallway. There's your cell and two others. At the end sits a prison guard. The prison guard is asleep\n\n")
+  @cell1 = Room.new("Your Cell", "It's a dirty room with no windows. It contains a bed, chair and desk. There's a mouse in the corner of the room\n\n", false)
+  @cell2 = Room.new("Cell 2", "It's the prison cell next to yours. It's the same as yours but there's a female prison inside\n\n", false)
+  @cell3 = Room.new("Cell 3", "It's the prison cell opposite yours. There's nothing in it except a bed, chair and desk\n\n", false)
+  @prison_hallway = Room.new("the Prison Hallway", "You are in the prison hallway. There's your cell and two others. At the end sits a prison guard. The prison guard is asleep\n\n", false)
+
+# code for generating items
+
+  @mouse = Item.new("Mouse", "A cute tiny mouse. Who could be afraid of this?", 1, true)
 
 # initial game state
+
+  @items = []
+  @inventory = []
   @game_complete = false
   @rooms = [@cell1, @cell2, @cell3, @prison_hallway].freeze
   @current_room_index = 2
-
-  def current_room 
-    @rooms[@current_room_index]
-  end
-
+  @room_id = [1, 2, 3, 4]
+  
 # Starting game
 
   while @game_complete == false
 
     puts "You are in #{current_room.name}"
-    puts "Where you like to move to?"
+    puts "Where you like to move to?\n\n"
 
-    # we need to print out all of the room names except for the one that we are currently in with numbers
+    # print out all of the room names except for the one that we are currently in with numbers
 
     @rooms.each_with_index do |room, number|
       puts "[#{number + 1}] #{room.name}" unless number == @current_room_index
     end
 
-    # get input as a number and up @current_room_index with the new room index number 
+    # gets user input
 
-    @input = gets.chomp
-    @current_room_index = @input.to_i - 1
+    input = gets.chomp
+
+    # confirms if the user input is the same as the current_room_index
+
+    if input.to_i - 1 == @current_room_index
+      puts "You are already in #{current_room.name} stupid"
     
-    # print out message confirming that they have moved room
+    # checks that the input is a number in the room_id
 
-    puts "You have moved to #{current_room.name}"
-    puts "#{current_room.description}"
+    elsif @room_id.include?(input.to_i)
 
-    if @input == "q"
-      @game_complete = true 
+      # updates the @current_room_index
+
+      @current_room_index = input.to_i - 1
+      
+      # print out message confirming that they have moved room
+
+      puts "\nYou have moved to #{current_room.name}"
+      puts "#{current_room.description}"
+
+    # if user types q the game will quit
+
+    elsif input.downcase == "q"
+      @game_complete = true
+
+    # for anything else, there's "I don't know that command"
+
+    else
+      puts "\nI don't know that command\n\n"
     end
-
+  
   end
 
 end
