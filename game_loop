@@ -28,9 +28,14 @@ def current_room
   @rooms[@current_room_index]
 end
 
+def pause(input)
+  $stdout.flush
+  sleep input
+end
 # player move code
 
 def player_move
+  puts "\n"
   puts "Where would you like to move to?\n\n"
   # prints out players move options excluding the room they are in
   @rooms.each_with_index do |room, number|
@@ -38,31 +43,43 @@ def player_move
   end
   # gets player input
   input = gets.chomp
+  pause(0.5)
   # confirms if the user input is the same as the current_room_index
   if input.to_i - 1 == @current_room_index
     puts "You are already in #{current_room.name} stupid"
+    pause(2)
   # checks that the input is a number in the room_id
   elsif @room_id.include?(input.to_i)
   # if so, updates the @current_room_index so the player moves
     @current_room_index = input.to_i - 1
   # print out message confirming that they have moved room
     puts "\nYou have moved to #{current_room.name}"
+    pause(1)
     puts "#{current_room.description}"
+    puts "\n"
+    pause(4)
   # if user types q the game will quit
   elsif input.downcase == "q"
     @game_complete = true
   # for anything else, there's "I don't know that command"
   else
     puts "\nI don't know that command\n\n"
+    pause(1)
   end
 end
 
 def starting_text
   puts "You wake up in a prison cell. You have no idea how you got there."
+  # pause(3)
   puts "#{current_room.description}"
+  # pause(4)
   puts "There's two other cells, one opposite yours, and one next to you."
+  # pause(4)
   puts "They are at the end of a prison hallway. At the other end is the exit."
-  puts "There's a guard blocking the exit. He's sitting next to a desk and is asleep.\n\n"
+  # pause(5)
+  puts "There's a guard blocking the exit. He's sitting next to a desk and is asleep."
+  # pause(5)
+  puts "\n"
   @starting_game_text = false
 end
 
@@ -70,15 +87,14 @@ class Game
 
 #  generating the rooms
 
-  @cell1 = Room.new("Your Cell", "It's a dirty room with no windows. It contains a bed, chair and desk. There's a mouse in the corner of the room\n\n", false)
-  @cell2 = Room.new("Cell 2", "It's the prison cell next to yours. It's the same as yours but there's a female prison inside\n\n", false)
-  @cell3 = Room.new("Cell 3", "It's the prison cell opposite yours. There's nothing in it except a bed, chair and desk\n\n", false)
-  @prison_hallway = Room.new("the Prison Hallway", "At one end of the Prison Hallway is your cell and two others. At the other end sits a prison guard. The prison guard is asleep\n\n", false)
+  @cell1 = Room.new("Your Cell", "It's a dirty room with no windows. It contains a bed, chair and desk. There's a mouse in the corner of the room", false)
+  @cell2 = Room.new("Cell 2", "It's the prison cell next to yours. It's the same as yours but there's a female prison inside", false)
+  @cell3 = Room.new("Cell 3", "It's the prison cell opposite yours. There's nothing in it except a bed, chair and desk", false)
+  @prison_hallway = Room.new("the Prison Hallway", "At one end of the Prison Hallway is your cell and two others. At the other end sits a prison guard. The prison guard is asleep", false)
 
 # code for generating items
 
   @mouse = Item.new("Mouse", "A cute tiny mouse. Who could be afraid of this?", 1, true)
-  @desk = Items.new("Desk", "It's a normal desk with a wooden top and 4 legs", 2, false)
 
 # initial game state
 
@@ -100,8 +116,10 @@ class Game
       starting_text
     end
 
-    puts "You are in #{current_room.name}"  
+    puts "You are in #{current_room.name}"
     puts "What would you like to do?"
+    puts "\n"
+    pause(3)
 
     # print out players command options
 
