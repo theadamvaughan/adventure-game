@@ -65,21 +65,65 @@ def player_move
   else
     puts "\nI don't know that command\n\n"
     pause(1)
+    player_move
   end
+end
+
+def look_at
+  pause(0.5)
+  puts "\nWhat would you like to look at?"
+  pause(1)
+  puts "[I] Inventory item"
+  puts "[R] Room item"
+
+  input = gets.chomp
+  pause(0.5)
+  if input.downcase == "i"
+    inventory_description
+
+  elsif input.downcase == "r"
+    puts "I need to added room items"
+
+  elsif input.downcase == "q"
+    @game_complete = true
+  
+  else 
+    puts "I don't know that command"
+    look_at
+  end
+
+
+end
+
+
+def inventory_items
+  puts "\nHere are your inventory items;"
+  pause(1)
+    @inventory.each_with_index do |item_name, item_index|
+    print "[#{item_index + 1}] #{item_name.name}\n"
+  end
+end
+
+
+def inventory_description
+   puts "Here's your inventory;"
+   pause(1)
+    @inventory.each_with_index do |item_name, item_index|
+      print "[#{item_index + 1}] #{item_name.name} - #{item_name.description}\n"
+    end
 end
 
 def starting_text
   puts "You wake up in a prison cell. You have no idea how you got there."
-  # pause(3)
+  pause(3)
   puts "#{current_room.description}"
-  # pause(4)
+  pause(4)
   puts "There's two other cells, one opposite yours, and one next to you."
-  # pause(4)
+  pause(4)
   puts "They are at the end of a prison hallway. At the other end is the exit."
-  # pause(5)
+  pause(5)
   puts "There's a guard blocking the exit. He's sitting next to a desk and is asleep."
-  # pause(5)
-  puts "\n"
+  pause(5)
   @starting_game_text = false
 end
 
@@ -95,11 +139,12 @@ class Game
 # code for generating items
 
   @mouse = Item.new("Mouse", "A cute tiny mouse. Who could be afraid of this?", 1, true)
+  @desk = Item.new("Desk", "A metal desk. Flat metal top and 4 metal legs.", 2, false)
 
 # initial game state
 
-  @room_items = []
-  @inventory = []
+  @room_items = [@mouse, @desk]
+  @inventory = [@mouse, @desk].freeze
   @game_complete = false
   @rooms = [@cell1, @cell2, @cell3, @prison_hallway].freeze
   @current_room_index = 0
@@ -116,16 +161,17 @@ class Game
       starting_text
     end
 
-    puts "You are in #{current_room.name}"
+    puts "\nYou are in #{current_room.name}"
     puts "What would you like to do?"
     puts "\n"
-    pause(3)
+    # pause(3)
 
     # print out players command options
 
     puts "[M] Move to"
     puts "[P] Pick up"
     puts "[L] Look at"
+    puts "[I] Inventory"
 
     # gets user input
 
@@ -133,6 +179,15 @@ class Game
 
       if input.downcase == "m"
         player_move
+
+      elsif input.downcase == "p"
+        # Add code to pick up
+
+      elsif input.downcase == "l"
+        look_at
+
+      elsif input.downcase == "i" 
+        inventory_items
 
       elsif input.downcase == "q"
         @game_complete = true
