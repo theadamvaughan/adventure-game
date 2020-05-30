@@ -44,7 +44,7 @@ class Game
 
 # initial game state
 
-  @items = []
+  @room_items = []
   @inventory = []
   @game_complete = false
   @rooms = [@cell1, @cell2, @cell3, @prison_hallway].freeze
@@ -56,6 +56,8 @@ class Game
 
   while @game_complete == false
 
+    # starting game text to help the player create a mental picture of the environment
+
     if @starting_game_text == true
       puts "You wake up in a prison cell. You have no idea how you got there."
       puts "#{current_room.description}"
@@ -65,48 +67,69 @@ class Game
       @starting_game_text = false
     end
 
-    puts "You are in #{current_room.name}"
-    puts "Where you like to move to?\n\n"
+    puts "You are in #{current_room.name}"  
+    puts "What would you like to do?"
 
-    # print out all of the room names except for the one that we are currently in with numbers
+    # print out players command options
 
-    @rooms.each_with_index do |room, number|
-      puts "[#{number + 1}] #{room.name}" unless number == @current_room_index
-    end
+    puts "[M] Move to"
+    puts "[P] Pick up"
+    puts "[L] Look at"
 
     # gets user input
 
     input = gets.chomp
 
-    # confirms if the user input is the same as the current_room_index
+      if input.downcase == "m"
 
-    if input.to_i - 1 == @current_room_index
-      puts "You are already in #{current_room.name} stupid"
-    
-    # checks that the input is a number in the room_id
+        # print out all of the room names except for the one that we are currently in with numbers
+        
+        puts "Where would you like to move to?\n\n"
 
-    elsif @room_id.include?(input.to_i)
+        @rooms.each_with_index do |room, number|
+          puts "[#{number + 1}] Move to #{room.name}" unless number == @current_room_index
+        end
 
-      # updates the @current_room_index
+        input = gets.chomp
 
-      @current_room_index = input.to_i - 1
+        # confirms if the user input is the same as the current_room_index
+
+        if input.to_i - 1 == @current_room_index
+          puts "You are already in #{current_room.name} stupid"
+        
+        # checks that the input is a number in the room_id
+
+        elsif @room_id.include?(input.to_i)
+
+          # updates the @current_room_index
+
+          @current_room_index = input.to_i - 1
+          
+          # print out message confirming that they have moved room
+
+          puts "\nYou have moved to #{current_room.name}"
+          puts "#{current_room.description}"
+
+        # if user types q the game will quit
+
+        elsif input.downcase == "q"
+          @game_complete = true
+
+        # for anything else, there's "I don't know that command"
+
+        else
+          puts "\nI don't know that command\n\n"
+        end
       
-      # print out message confirming that they have moved room
+        # End of room move commands
 
-      puts "\nYou have moved to #{current_room.name}"
-      puts "#{current_room.description}"
+      elsif input.downcase == "q"
+          @game_complete = true
 
-    # if user types q the game will quit
+      else
+          puts "\nI don't know that command\n\n"
+      end
 
-    elsif input.downcase == "q"
-      @game_complete = true
-
-    # for anything else, there's "I don't know that command"
-
-    else
-      puts "\nI don't know that command\n\n"
-    end
-  
   end
 
 end
