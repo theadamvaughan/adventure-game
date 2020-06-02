@@ -22,17 +22,52 @@ class Item
   end
 end
 
-# current room method to call the room the player is in 
+# starting text that's only applied at the beginning of the game
 
-def current_room 
-  @rooms[@current_room_index]
+def starting_text
+  puts "You wake up in a prison cell. You have no idea how you got there."
+  # pause(3)
+  puts "#{current_room.description}"
+  # pause(4)
+  puts "There's two other cells, one opposite yours, and one next to you."
+  # pause(4)
+  puts "They are at the end of a prison hallway. At the other end is the exit."
+  # pause(5)
+  puts "There's a guard blocking the exit. He's sitting next to a desk and is asleep."
+  # pause(5)
+  @starting_game_text = false
 end
+
+# pause method to give the player the option to read the text 
 
 def pause(input)
   $stdout.flush
   sleep input
 end
-# player move code
+
+# details about the current room the player is in
+
+def current_room 
+  @rooms[@current_room_index]
+end
+
+def current_room_items
+  @current_room_items = @room_items_options[@current_room_items_index]
+  @current_room_items.each_with_index do |item_name, number|
+    puts "[#{number + 1}] #{item_name.name}"
+  end
+end
+
+def room_items_description
+  @current_room_items = @room_items_options[@current_room_items_index]
+  puts "Here's what's in #{current_room.name};"
+  pause(1)
+  @current_room_items.each_with_index do |room_item_name, room_item_index|
+    print "[#{room_item_index + 1}] #{room_item_name.name} - #{room_item_name.description}\n"
+  end
+end
+
+# Player actions code
 
 def player_move
   puts "\n"
@@ -52,6 +87,8 @@ def player_move
   elsif @room_id.include?(input.to_i)
   # if so, updates the @current_room_index so the player moves
     @current_room_index = input.to_i - 1
+    puts @cock
+    @current_room_items_index = input.to_i - 1
   # print out message confirming that they have moved room
     puts "\nYou have moved to #{current_room.name}"
     pause(1)
@@ -67,20 +104,6 @@ def player_move
     pause(1)
     player_move
   end
-end
-
-def current_room_items
-    @current_room_items.each_with_index do |item_name, number|
-    puts "[#{number + 1}] #{item_name.name}"
-  end
-end
-
-def room_items_description
-   puts "Here's what's in #{current_room.name};"
-   pause(1)
-    @current_room_items.each_with_index do |room_item_name, room_item_index|
-      print "[#{room_item_index + 1}] #{room_item_name.name} - #{room_item_name.description}\n"
-    end
 end
 
 def look_at
@@ -114,6 +137,8 @@ def pick_up
   current_room_items
 end
 
+# players inventory
+
 def inventory_items
   puts "\nHere are your inventory items;"
   pause(1)
@@ -130,19 +155,7 @@ def inventory_description
     end
 end
 
-def starting_text
-  puts "You wake up in a prison cell. You have no idea how you got there."
-  # pause(3)
-  puts "#{current_room.description}"
-  # pause(4)
-  puts "There's two other cells, one opposite yours, and one next to you."
-  # pause(4)
-  puts "They are at the end of a prison hallway. At the other end is the exit."
-  # pause(5)
-  puts "There's a guard blocking the exit. He's sitting next to a desk and is asleep."
-  # pause(5)
-  @starting_game_text = false
-end
+
 
 class Game
 
@@ -177,7 +190,8 @@ class Game
   @cell3_items = [@desk, @chair, @bed, @cheese_sandwich]
   @prison_hallway_items = [@desk, @prison_guard, @prison_keys]
 
-  @current_room_items = [@mouse, @desk, @chair, @bed]
+  @room_items_options = [@cell1_items, @cell2_items, @cell3_items, @prison_hallway_items]
+  @current_room_items_index = 0
   
 # Starting game
 
