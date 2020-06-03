@@ -25,21 +25,11 @@ end
 # starting text that's only applied at the beginning of the game
 
 def starting_text
-  "You wake up in a prison cell. You have no idea how you got there.".each_char {|c| putc c ; sleep 0.04; $stdout.flush }
-  pause(1)
-  puts "\n"
-  "#{current_room.description}".each_char {|c| putc c ; sleep 0.04; $stdout.flush }
-  pause(1)
-  puts "\n"
-  "There's two other cells, one opposite yours, and one next to you.".each_char {|c| putc c ; sleep 0.04; $stdout.flush }
-  pause(1)
-  puts "\n"
-  "They are at the end of a prison hallway. At the other end is the exit.".each_char {|c| putc c ; sleep 0.04; $stdout.flush }
-  pause(1)
-  puts "\n"
-  "There's a guard blocking the exit. He's sitting next to a desk and is asleep.".each_char {|c| putc c ; sleep 0.04; $stdout.flush }
-  pause(1)
-  puts "\n"
+  slow_type("You wake up in a prison cell. You have no idea how you got there.")
+  slow_type("#{current_room.description}")
+  slow_type("There's two other cells, one opposite yours, and one next to you.")
+  slow_type( "They are at the end of a prison hallway. At the other end is the exit.")
+  slow_type("There's a guard blocking the exit. He's sitting next to a desk and is asleep.")
   @starting_game_text = false
 end
 
@@ -49,6 +39,15 @@ def pause(input)
   $stdout.flush
   sleep input
 end
+
+# makes the words type out on screen
+
+def slow_type(text)
+  text.each_char {|c| putc c ; sleep 0.04; $stdout.flush }
+  pause(1)
+  puts "\n"
+end
+
 
 # details about the current room the player is in
 
@@ -65,8 +64,7 @@ end
 
 def room_items_description
   @current_room_items = @room_items_options[@current_room_items_index]
-  puts "Here's what's in #{current_room.name};"
-  # pause(1)
+  slow_type("Here's what's in #{current_room.name};")
   @current_room_items.each_with_index do |room_item_name, room_item_index|
     print "[#{room_item_index + 1}] #{room_item_name.name} - #{room_item_name.description}\n"
   end
@@ -75,8 +73,7 @@ end
 # Player actions code
 
 def player_move
-  puts "\n"
-  puts "Where would you like to move to?\n\n"
+  slow_type("\nWhere would you like to move to?\n")
   # prints out players move options excluding the room they are in
   @rooms.each_with_index do |room, number|
     puts "[#{number + 1}] Move to #{room.name}" unless number == @current_room_index
@@ -86,35 +83,29 @@ def player_move
   pause(0.5)
   # confirms if the user input is the same as the current_room_index
   if input.to_i - 1 == @current_room_index
-    puts "You are already in #{current_room.name} stupid"
-    pause(2)
+    slow_type("\nYou are already in #{current_room.name} stupid")
+    pause(1)
   # checks that the input is a number in the room_id
   elsif @room_id.include?(input.to_i)
   # if so, updates the @current_room_index so the player moves
     @current_room_index = input.to_i - 1
-    puts @cock
     @current_room_items_index = input.to_i - 1
   # print out message confirming that they have moved room
-    puts "\nYou have moved to #{current_room.name}"
-    pause(1)
-    puts "#{current_room.description}"
-    puts "\n"
-    pause(4)
+    slow_type("\nYou have moved to #{current_room.name}")
+    slow_type("#{current_room.description}")
   # if user types q the game will quit
   elsif input.downcase == "q"
     @game_complete = true
   # for anything else, there's "I don't know that command"
   else
-    puts "\nI don't know that command\n\n"
-    pause(1)
+    slow_type("I don't know that command\n")
     player_move
   end
 end
 
 def look_at
   pause(0.5)
-  puts "\nWhat would you like to look at?"
-  pause(1)
+  slow_type("\nWhat would you like to look at?")
   puts "[I] Inventory item"
   puts "[R] Whats in the room"
 
@@ -130,7 +121,7 @@ def look_at
     @game_complete = true
   
   else 
-    puts "I don't know that command"
+    slow_type("\nI don't know that command")
     look_at
   end
 
@@ -144,14 +135,14 @@ end
 # if you can pick it up it will place the item in your inventory and remove it from the room
 
 def pick_up
-  puts "Here's what's in #{current_room.name};"
+  slow_type("\nHere's what's in #{current_room.name};")
   current_room_items
-  puts "What would you like to pick up?"
+  slow_type("\nWhat would you like to pick up?")
   input = gets.chomp.to_i
     if (@current_room_items[input - 1].canBePickedUp != true)
-        puts "You cannot pick that up"
+        slow_type("\nYou cannot pick that up")
     else
-      puts "You have picked up a #{@room_items_options[@current_room_items_index][input - 1].name}"
+      slow_type("\nYou have picked up a #{@room_items_options[@current_room_items_index][input - 1].name}")
       @inventory << @current_room_items[input - 1]
       @room_items_options[@current_room_items_index].delete_at(input - 1)
     end
@@ -160,16 +151,14 @@ end
 # players inventory
 
 def inventory_items
-  puts "\nHere are your inventory items;"
-  pause(1)
+  slow_type("\nHere are your inventory items;")
     @inventory.each_with_index do |item_name, item_index|
     print "[#{item_index + 1}] #{item_name.name}\n"
   end
 end
 
 def inventory_description
-   puts "Here's your inventory;"
-   pause(1)
+   slow_type("Here's your inventory;")
     @inventory.each_with_index do |item_name, item_index|
       print "[#{item_index + 1}] #{item_name.name} - #{item_name.description}\n"
     end
@@ -184,8 +173,8 @@ class Game
   @mouse = Item.new("Mouse", "A cute tiny mouse. Who could be afraid of this?", 1, true)
   @desk = Item.new("Desk", "A metal desk. Flat metal top and 4 metal legs.", 2, false)
   @chair = Item.new("Chair", "A metal chair with 4 legs", 3, false)
-  @bed = Item.new("Bed", "A metal bed with a thin pillow and a tatty waffer think blanket", 4, false)
-  @cheese_sandwich = Item.new("Cheese_sandwich", "A mouldy cheese sandwich", 5, true)
+  @bed = Item.new("Bed", "A metal bed with a thin pillow and a tatty waffer thin blanket", 4, false)
+  @cheese_sandwich = Item.new("Cheese Sandwich", "A mouldy cheese sandwich. No human would want to eat this", 5, true)
   @prison_guard = Item.new("Prison Guard", "He's a large man, clearly been eating too many pies", 6, false)
   @prison_keys = Item.new("Prison Keys", "A bunch of keys that open all the cells and the cell room main door", 7, true)
 
@@ -223,12 +212,8 @@ class Game
       starting_text
     end
 
-    "\nYou are in #{current_room.name}".each_char {|c| putc c ; sleep 0.04; $stdout.flush }
-    pause(1)
-    puts "\n"
-    "What would you like to do?".each_char {|c| putc c ; sleep 0.04; $stdout.flush }
-    puts "\n"
-    pause(1)
+    slow_type("\nYou are in #{current_room.name}")
+    slow_type("What would you like to do?")
 
     # print out players command options
 
@@ -257,7 +242,7 @@ class Game
         @game_complete = true
 
       else
-          puts "\nI don't know that command\n\n"
+        slow_type("\nI don't know that command\n")
       end
 
   end
