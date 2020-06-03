@@ -25,16 +25,21 @@ end
 # starting text that's only applied at the beginning of the game
 
 def starting_text
-  puts "You wake up in a prison cell. You have no idea how you got there."
-  # pause(3)
-  puts "#{current_room.description}"
-  # pause(4)
-  puts "There's two other cells, one opposite yours, and one next to you."
-  # pause(4)
-  puts "They are at the end of a prison hallway. At the other end is the exit."
-  # pause(5)
-  puts "There's a guard blocking the exit. He's sitting next to a desk and is asleep."
-  # pause(5)
+  "You wake up in a prison cell. You have no idea how you got there.".each_char {|c| putc c ; sleep 0.04; $stdout.flush }
+  pause(1)
+  puts "\n"
+  "#{current_room.description}".each_char {|c| putc c ; sleep 0.04; $stdout.flush }
+  pause(1)
+  puts "\n"
+  "There's two other cells, one opposite yours, and one next to you.".each_char {|c| putc c ; sleep 0.04; $stdout.flush }
+  pause(1)
+  puts "\n"
+  "They are at the end of a prison hallway. At the other end is the exit.".each_char {|c| putc c ; sleep 0.04; $stdout.flush }
+  pause(1)
+  puts "\n"
+  "There's a guard blocking the exit. He's sitting next to a desk and is asleep.".each_char {|c| putc c ; sleep 0.04; $stdout.flush }
+  pause(1)
+  puts "\n"
   @starting_game_text = false
 end
 
@@ -61,7 +66,7 @@ end
 def room_items_description
   @current_room_items = @room_items_options[@current_room_items_index]
   puts "Here's what's in #{current_room.name};"
-  pause(1)
+  # pause(1)
   @current_room_items.each_with_index do |room_item_name, room_item_index|
     print "[#{room_item_index + 1}] #{room_item_name.name} - #{room_item_name.description}\n"
   end
@@ -132,9 +137,24 @@ def look_at
 
 end
 
+
+# need to select which item you want to pick up
+# the computer must be able to tell if it can be picked up
+# if it can't be picked up it will tell you
+# if you can pick it up it will place the item in your inventory and remove it from the room
+
 def pick_up
-  puts "here's what's in your room;"
+  puts "Here's what's in #{current_room.name};"
   current_room_items
+  puts "What would you like to pick up?"
+  input = gets.chomp.to_i
+    if (@current_room_items[input - 1].canBePickedUp != true)
+        puts "You cannot pick that up"
+    else
+      puts "You have picked up a #{@room_items_options[@current_room_items_index][input - 1].name}"
+      @inventory << @current_room_items[input - 1]
+      @room_items_options[@current_room_items_index].delete_at(input - 1)
+    end
 end
 
 # players inventory
@@ -178,7 +198,7 @@ class Game
 
 # initial game state
 
-  @inventory = [@mouse].freeze
+  @inventory = []
   @game_complete = false
   @rooms = [@cell1, @cell2, @cell3, @prison_hallway].freeze
   @current_room_index = 0
@@ -203,10 +223,12 @@ class Game
       starting_text
     end
 
-    puts "\nYou are in #{current_room.name}"
-    puts "What would you like to do?"
+    "\nYou are in #{current_room.name}".each_char {|c| putc c ; sleep 0.04; $stdout.flush }
+    pause(1)
     puts "\n"
-    # pause(3)
+    "What would you like to do?".each_char {|c| putc c ; sleep 0.04; $stdout.flush }
+    puts "\n"
+    pause(1)
 
     # print out players command options
 
