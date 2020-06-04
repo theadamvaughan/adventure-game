@@ -28,7 +28,7 @@ def starting_text
   slow_type("You wake up in a prison cell. You have no idea how you got there.")
   slow_type("#{current_room.description}")
   slow_type("There's two other cells, one opposite yours, and one next to you.")
-  slow_type( "They are at the end of a prison hallway. At the other end is the exit.")
+  slow_type("They are at the end of a prison hallway. At the other end is the exit.")
   slow_type("There's a guard blocking the exit. He's sitting next to a desk and is asleep.")
   @starting_game_text = false
 end
@@ -43,9 +43,14 @@ end
 # makes the words type out on screen
 
 def slow_type(text)
-  text.each_char {|c| putc c ; sleep 0.04; $stdout.flush }
-  pause(1)
-  puts "\n"
+  @debug = true
+  if @debug == false
+    text.each_char {|c| putc c ; sleep 0.04; $stdout.flush }
+    pause(1)
+    puts "\n"
+  else
+    puts text
+  end
 end
 
 
@@ -105,7 +110,7 @@ end
 
 def look_at
   pause(0.5)
-  slow_type("\nWhat would you like to look at?")
+  slow_type("\nWhat would you like to look at?\n")
   puts "[I] Inventory item"
   puts "[R] Whats in the room"
 
@@ -163,7 +168,6 @@ def inventory_description
       print "[#{item_index + 1}] #{item_name.name} - #{item_name.description}\n"
     end
 end
-
 
 
 class Game
