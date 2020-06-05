@@ -87,19 +87,33 @@ def player_move
   input = gets.chomp
   pause(0.5)
   # confirms if the user input is the same as the current_room_index
+
   if input.to_i - 1 == @current_room_index
+
     slow_type("\nYou are already in #{current_room.name} stupid")
     pause(1)
-  # checks that the input is a number in the room_id
-  elsif @room_id.include?(input.to_i)
-  # if so, updates the @current_room_index so the player moves
+
+  # checks that the input is a number in the room_id and whether the room is not locked
+
+  elsif @room_id.include?(input.to_i) && !current_room.isLocked
+    # if so, updates the @current_room_index so the player moves
+
     @current_room_index = input.to_i - 1
+
   # print out message confirming that they have moved room
+
     slow_type("\nYou have moved to #{current_room.name}")
     slow_type("#{current_room.description}")
+
+    elsif @room_id.include?(input.to_i) && current_room.isLocked
+
+    puts "The room is locked, you'll need to find a way out"
+  
   # if user types q the game will quit
+
   elsif input.downcase == "q"
     @game_complete = true
+
   # for anything else, there's "I don't know that command"
   else
     slow_type("I don't know that command\n")
