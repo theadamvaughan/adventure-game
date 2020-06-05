@@ -61,15 +61,15 @@ def current_room
 end
 
 def current_room_items
-  @current_room_items = @room_items_options[@current_room_items_index]
+  @current_room_items = @items[@current_room_index]
   @current_room_items.each_with_index do |item_name, number|
     puts "[#{number + 1}] #{item_name.name}"
   end
 end
 
 def room_items_description
-  @current_room_items = @room_items_options[@current_room_items_index]
-  slow_type("Here's what's in #{current_room.name};")
+  @current_room_items = @items[@current_room_index]
+  slow_type("\nHere's what's in #{current_room.name};\n\n")
   @current_room_items.each_with_index do |room_item_name, room_item_index|
     print "[#{room_item_index + 1}] #{room_item_name.name} - #{room_item_name.description}\n"
   end
@@ -78,7 +78,7 @@ end
 # Player actions code
 
 def player_move
-  slow_type("\nWhere would you like to move to?\n")
+  slow_type("\nWhere would you like to move to?\n\n")
   # prints out players move options excluding the room they are in
   @rooms.each_with_index do |room, number|
     puts "[#{number + 1}] Move to #{room.name}" unless number == @current_room_index
@@ -94,7 +94,6 @@ def player_move
   elsif @room_id.include?(input.to_i)
   # if so, updates the @current_room_index so the player moves
     @current_room_index = input.to_i - 1
-    @current_room_items_index = input.to_i - 1
   # print out message confirming that they have moved room
     slow_type("\nYou have moved to #{current_room.name}")
     slow_type("#{current_room.description}")
@@ -110,7 +109,7 @@ end
 
 def look_at
   pause(0.5)
-  slow_type("\nWhat would you like to look at?\n")
+  slow_type("\nWhat would you like to look at?\n\n")
   puts "[I] Inventory item"
   puts "[R] Whats in the room"
 
@@ -133,37 +132,36 @@ def look_at
 
 end
 
-
 # need to select which item you want to pick up
 # the computer must be able to tell if it can be picked up
 # if it can't be picked up it will tell you
 # if you can pick it up it will place the item in your inventory and remove it from the room
 
 def pick_up
-  slow_type("\nHere's what's in #{current_room.name};")
+  slow_type("\nHere's what's in #{current_room.name};\n\n")
   current_room_items
-  slow_type("\nWhat would you like to pick up?")
+  slow_type("\nWhat would you like to pick up?\n")
   input = gets.chomp.to_i
     if (@current_room_items[input - 1].canBePickedUp != true)
         slow_type("\nYou cannot pick that up")
     else
-      slow_type("\nYou have picked up a #{@room_items_options[@current_room_items_index][input - 1].name}")
+      slow_type("\nYou have picked up a #{@items[@current_room_index][input - 1].name}")
       @inventory << @current_room_items[input - 1]
-      @room_items_options[@current_room_items_index].delete_at(input - 1)
+      @items[@current_room_index].delete_at(input - 1)
     end
 end
 
 # players inventory
 
 def inventory_items
-  slow_type("\nHere are your inventory items;")
+  slow_type("\nHere are your inventory items;\n")
     @inventory.each_with_index do |item_name, item_index|
     print "[#{item_index + 1}] #{item_name.name}\n"
   end
 end
 
 def inventory_description
-   slow_type("Here's your inventory;")
+   slow_type("\nHere's your inventory;\n")
     @inventory.each_with_index do |item_name, item_index|
       print "[#{item_index + 1}] #{item_name.name} - #{item_name.description}\n"
     end
@@ -203,8 +201,7 @@ class Game
   @cell3_items = [@desk, @chair, @bed, @cheese_sandwich]
   @prison_hallway_items = [@desk, @prison_guard, @prison_keys]
 
-  @room_items_options = [@cell1_items, @cell2_items, @cell3_items, @prison_hallway_items]
-  @current_room_items_index = 0
+  @items = [@cell1_items, @cell2_items, @cell3_items, @prison_hallway_items]
   
 # Starting game
 
@@ -217,7 +214,7 @@ class Game
     end
 
     slow_type("\nYou are in #{current_room.name}")
-    slow_type("What would you like to do?")
+    slow_type("What would you like to do?\n\n")
 
     # print out players command options
 
