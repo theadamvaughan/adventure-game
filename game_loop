@@ -44,7 +44,7 @@ end
 
 def slow_type(text)
   @debug = true
-  if @debug == false
+  if !@debug
     text.each_char {|c| putc c ; sleep 0.04; $stdout.flush }
     pause(1)
     puts "\n"
@@ -52,7 +52,6 @@ def slow_type(text)
     puts text
   end
 end
-
 
 # details about the current room the player is in
 
@@ -78,7 +77,7 @@ end
 # Player actions code
 
 def player_move
-  slow_type("\nWhere would you like to move to?\n\n")
+  slow_type("\nWhere would you like to move to?\n")
   # prints out players move options excluding the room they are in
   @rooms.each_with_index do |room, number|
     puts "[#{number + 1}] Move to #{room.name}" unless number == @current_room_index
@@ -105,7 +104,7 @@ def player_move
     slow_type("\nYou have moved to #{current_room.name}")
     slow_type("#{current_room.description}")
 
-    elsif @room_id.include?(input.to_i) && current_room.isLocked
+  elsif @room_id.include?(input.to_i) && current_room.isLocked
 
     puts "The room is locked, you'll need to find a way out"
   
@@ -146,13 +145,10 @@ def look_at
 
 end
 
-# need to select which item you want to pick up
-# the computer must be able to tell if it can be picked up
-# if it can't be picked up it will tell you
-# if you can pick it up it will place the item in your inventory and remove it from the room
+# STILL NEED TO MAKE IT SO YOU CANNOT ENTER AN INCORRECT INPUT
 
 def pick_up
-  slow_type("\nHere's what's in #{current_room.name};\n\n")
+  slow_type("\nHere's what's in #{current_room.name};\n")
   current_room_items
   slow_type("\nWhat would you like to pick up?\n")
   input = gets.chomp.to_i
@@ -168,20 +164,57 @@ end
 # players inventory
 
 def inventory_items
-  slow_type("\nHere are your inventory items;\n")
-    @inventory.each_with_index do |item_name, item_index|
-    print "[#{item_index + 1}] #{item_name.name}\n"
+  if @inventory == [] 
+    puts "You do not have any items in your inventory"
+  else
+    slow_type("\nHere are your inventory items;\n")
+      @inventory.each_with_index do |item_name, item_index|
+      print "[#{item_index + 1}] #{item_name.name}\n"
+    end
   end
 end
 
 def inventory_description
+  if @inventory == [] 
+    puts "You do not have any items in your inventory"
+  else
    slow_type("\nHere's your inventory;\n")
     @inventory.each_with_index do |item_name, item_index|
       print "[#{item_index + 1}] #{item_name.name} - #{item_name.description}\n"
     end
+  end
 end
 
+# needs to print the items in the inventory
+# you will need to be able to select one and then use it with another object
+# the object will either be in your inventory, or in the room 
 
+def use_item
+  @items_to_use = []
+  @item_indexes = []
+  if @inventory == [] 
+    puts "You do not have any items in your inventory"
+  else
+    slow_type("\nHere are your inventory items;\n")
+      @inventory.each_with_index do |item_name, item_index|
+      @item_indexes << item_index + 1
+      print "[#{item_index + 1}] #{item_name.name}\n"
+    end
+    puts "What would you like to use?"
+    input = gets.chomp.to_i
+    if @item_indexes.include?(input)
+      @items_to_use << @inventory[input - 1]
+      if @items_to_use[0].name == "Bobby Pin" && @current_room_index == 0
+        @cell1.isLocked = false
+        puts "You have used the booby pin to pick the lock on your cell. You genlty open the door so you do not wake the guard"
+      else
+        puts "You cannot use those items together"
+      end
+    else
+      puts "I don't know that command"
+    end
+  end
+end
 class Game
 
 # code for generating items
@@ -193,13 +226,14 @@ class Game
   @cheese_sandwich = Item.new("Cheese Sandwich", "A mouldy cheese sandwich. No human would want to eat this", 5, true)
   @prison_guard = Item.new("Prison Guard", "He's a large man, clearly been eating too many pies", 6, false)
   @prison_keys = Item.new("Prison Keys", "A bunch of keys that open all the cells and the cell room main door", 7, true)
+  @bobby_pin = Item.new("Bobby Pin", "Good for holding back hair and picking locks", 8, true)
 
 #  generating the rooms
 
-  @cell1 = Room.new("Your Cell", "It's a dirty room with no windows. It contains a bed, chair and desk. There's a mouse in the corner of the room", false)
-  @cell2 = Room.new("Cell 2", "It's the prison cell next to yours. It's the same as yours but there's a female prison inside", false)
-  @cell3 = Room.new("Cell 3", "It's the prison cell opposite yours. There's nothing in it except a bed, chair and desk", false)
-  @prison_hallway = Room.new("the Prison Hallway", "At one end of the Prison Hallway is your cell and two others. At the other end sits a prison guard. The prison guard is asleep", false)
+  @cell1 = Room.new("Your Cell", "It's a dirty room with no windows. It contains a bed, chair and desk. There's a mouse in the corner of the room.", true)
+  @cell2 = Room.new("Cell 2", "It's the prison cell next to yours. It's the same as yours but there's a female prison inside.", false)
+  @cell3 = Room.new("Cell 3", "It's the prison cell opposite yours. It open with nothing in it except a bed, chair and desk. On the desk appears to be a sandwich", false)
+  @prison_hallway = Room.new("the Prison Hallway", "At one end of the Prison Hallway is your cell and two others. At the other end sits a prison guard. The prison guard is asleep.", false)
 
 # initial game state
 
@@ -210,7 +244,7 @@ class Game
   @room_id = [1, 2, 3, 4]
   @starting_game_text = true
 
-  @cell1_items = [@mouse, @desk, @chair, @bed]
+  @cell1_items = [@mouse, @desk, @chair, @bed, @bobby_pin]
   @cell2_items = [@desk, @chair, @bed]
   @cell3_items = [@desk, @chair, @bed, @cheese_sandwich]
   @prison_hallway_items = [@desk, @prison_guard, @prison_keys]
@@ -228,7 +262,7 @@ class Game
     end
 
     slow_type("\nYou are in #{current_room.name}")
-    slow_type("What would you like to do?\n\n")
+    slow_type("What would you like to do?\n")
 
     # print out players command options
 
@@ -236,6 +270,7 @@ class Game
     puts "[P] Pick up"
     puts "[L] Look at"
     puts "[I] Inventory"
+    puts "[U] Use item"
 
     # gets user input
 
@@ -252,6 +287,9 @@ class Game
 
       elsif input.downcase == "i" 
         inventory_items
+
+      elsif input.downcase == "u"
+        use_item
 
       elsif input.downcase == "q"
         @game_complete = true
