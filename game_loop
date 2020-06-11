@@ -155,12 +155,16 @@ def pick_up
     if (@current_room_items[input - 1].canBePickedUp != true)
         slow_type("\nYou cannot pick that up")
     elsif
-      if (input - 1) == 0 && @current_room_items[input - 1].name == "Mouse" && @current_room_index[input - 1] && @inventory.include?(@cheese_sandwich)
+      if (input - 1) == 0 && @current_room_index == 0 && @inventory.include?(@cheese_sandwich)
         puts slow_type("You have used the Cheese Sandwich to tempt the Mouse over to you. Whilst he is nibbling on the mouldy cheese, you grab him and put him in your pocket.")
         @inventory << @current_room_items[input - 1]
         @items[@current_room_index].delete_at(input - 1)
-      elsif (input - 1) == 0 && @current_room_items[input - 1].name == "Mouse" && @current_room_index[input - 1] && !@inventory.include?(@cheese_sandwich)
+      elsif (input - 1) == 0 && @current_room_index == 0 && !@inventory.include?(@cheese_sandwich)
         puts slow_type("You try to pick up the Mouse but he won't come near you.")
+      elsif (input - 1) == 2 && @current_room_index == 3 && !@inventory.include?(@mouse)
+        puts "In trying to pick up the keys you wake the guard up. He returns you back to your cell and sits back down to go to sleep"
+        @current_room_index = 0
+        @cell1.isLocked = true
       else
       slow_type("\nYou have picked up a #{@items[@current_room_index][input - 1].name}")
       @inventory << @current_room_items[input - 1]
@@ -212,9 +216,11 @@ def use_item
     input = gets.chomp.to_i
     if @item_indexes.include?(input)
       @items_to_use << @inventory[input - 1]
-      if @items_to_use[0].name == "Bobby Pin" && @current_room_index == 0
+      if @items_to_use[0] == @bobby_pin && @current_room_index == 0
         @cell1.isLocked = false
         puts slow_type("You have used the bobby pin to pick the lock on your cell. You gently open the door so you do not wake up the guard.")
+      elsif @items_to_use[1] == @cheese_sandwich
+        puts slow_type("Seriously, you do not not want to eat that")
       else
         puts slow_type("You cannot use those items together")
       end
