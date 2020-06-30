@@ -46,62 +46,47 @@ class Game
     @options = []
   end
 
-  def player_move
+  def current_room_id(id)
 
+  end
+
+
+
+  def player_move
     slow_type("\nWhere would you like to move to?\n")
     # prints out players move options excluding the room they are in
-    
     @rooms.each_with_index do |room, index|
       option = index + 1
       @options << option
-      puts "#{option} #{room.name}"
+      puts "#{option} #{room.name}" unless room.id == @current_room_id
     end
-
     # gets player input
     input = gets.chomp
     pause(0.5)
-
     # confirms if the users input is valid
-
     if @options.include?(input.to_i)
-      
-      puts "I will continue with this code"
-      clear_options
-
-
     # # checks that the input is a number in the room_id and whether the room is not locked
-
-
-
-    # elsif @room_id.include?(input.to_i) && !current_room.isLocked
-    #   # if so, updates the @current_room_index so the player moves
-
-    #   @current_room_index = input.to_i - 1
-
-    # # print out message confirming that they have moved room
-
-    #   slow_type("\nYou have moved to #{current_room.name}")
-    #   slow_type("#{current_room.description}")
-
-    # elsif @room_id.include?(input.to_i) && current_room.isLocked
-
-    #   puts "The room is locked, you'll need to find a way out"
-    
-    # if user types q the game will quit
-
+      if @options.include?(input.to_i) && find_room_by_id(@current_room_id).isLocked
+        slow_type("#{find_room_by_id(@current_room_id).name} is locked, you'll need to find a way out") 
+      elsif @options.include?(input.to_i) && !find_room_by_id(@current_room_id).isLocked
+        # if so, updates the @current_room_id so the player moves
+        @current_room_id = input.to_i + 8
+        slow_type("\nYou have moved to #{find_room_by_id(@current_room_id).name}")
+        slow_type("#{find_room_by_id(@current_room_id).description}")
+        clear_options
+      end
+      # if user types q the game will quit
     elsif input.downcase == "q"
       @game_complete = true
-
     else
       slow_type("I don't know that command\n")
-      player_move
+      clear_options
     end
   end
 
   def find_room_by_id(id)
     @rooms.each do |room|
       return room if room.id == id
-      end
     end
   end
 
@@ -115,7 +100,7 @@ class Game
   def items_i_can_currently_use
     item_combos = []
     @use_combos.each do |combo|
-      item_combos << combo if @inventory.include?(combo[:item_id]) && combo[:usage_location] == @current_room_index
+      item_combos << combo if @inventory.include?(combo[:item_id]) && combo[:usage_location] == @current_room_id
     end
   end
 
@@ -145,7 +130,7 @@ class Game
   #  generating the rooms
 
     @rooms = [
-      Room.new("Your Cell", "It's a dirty room with no windows. It contains a bed, chair and desk. There's a mouse in the corner of the room.", 9, true), 
+      Room.new("Your Cell", "It's a dirty room with no windows. It contains a bed, chair and desk. There's a mouse in the corner of the room.", 9, false), 
       Room.new("Cell 2", "It's the prison cell next to yours. It's the same as yours but there's a female prison inside.", 10, false),
       Room.new("Cell 3", "It's the prison cell opposite yours. It open with nothing in it except a bed, chair and desk. On the desk appears to be a sandwich", 11, false),
       Room.new("the Prison Hallway", "At one end of the Prison Hallway is your cell and two others. At the other end sits a prison guard. The prison guard is asleep.", 12, false)
@@ -161,15 +146,21 @@ class Game
 
     @inventory = [1, 8, 5]
     @game_complete = false
-    @current_room_index = 9
+    @current_room_id = 9
     @starting_game_text = true
-    @options = []
+
     @cell1_items = [1, 2, 3, 4, 8]
     @cell2_items = [2, 3, 4]
     @cell3_items = [2, 3, 4, 5]
     @prison_hallway_items = [2, 6, 7]
 
-# Starting game
+  # bits to make the player_move work
+
+    @options = []
+
+  end
+
+  # Starting game
 
   def play
     while @game_complete == false
