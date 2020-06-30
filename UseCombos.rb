@@ -46,19 +46,13 @@ class Game
     @options = []
   end
 
-  def current_room_id(id)
-
-  end
-
-
-
   def player_move
     slow_type("\nWhere would you like to move to?\n")
     # prints out players move options excluding the room they are in
     @rooms.each_with_index do |room, index|
       option = index + 1
       @options << option
-      puts "#{option} #{room.name}" unless room.id == @current_room_id
+      puts "[#{option}] #{room.name}" unless room.id == @current_room_id
     end
     # gets player input
     input = gets.chomp
@@ -84,18 +78,64 @@ class Game
     end
   end
 
+# ......FINDING ROOMS
+
   def find_room_by_id(id)
     @rooms.each do |room|
       return room if room.id == id
     end
   end
 
+
+def look_at
+  pause(0.5)
+  slow_type("\nWhat would you like to look at?\n\n")
+  puts "[I] Inventory item"
+  puts "[R] Whats in the room"
+
+  input = gets.chomp
+  pause(0.5)
+  if input.downcase == "i"
+    puts "still figuring this out"
+
+  elsif input.downcase == "r"
+    puts "still figuring this out"
+
+  elsif input.downcase == "q"
+    @game_complete = true
+  
+  else 
+    slow_type("\nI don't know that command")
+    look_at
+  end
+end
+
+# ......FINDING ITEMS AND PRINTING OUT CELL ITEMS
+
   def find_item_by_id(id)
     @items.each do |item|
       # puts item
-      return item if item.item_id == id
+      puts item.name if item.item_id == id
     end
   end
+
+
+# ........NEED TO WORK ON THIS - POSSIBLY LOOK AT PUTTING THE ROOM ITEM OPTIONS IN A HASH/ARRAY LIKE ROOMS AND ITEMS
+
+
+  def current_cell_items
+    current_cell_items = @cell1_items
+    current_cell_items
+  end
+
+  def print_out_room_items(current_cell_items)
+    cell_items = current_cell_items
+    cell_items.each do |num|
+      find_item_by_id(num)
+    end
+  end
+
+# ......EVERYTHING BELOW HERE RELATES TO THE USE ITEM OPTION
 
   def items_i_can_currently_use
     item_combos = []
@@ -104,7 +144,6 @@ class Game
     end
   end
 
-
   def print_things_i_can_currently_use
     items_i_can_currently_use.each do |combo|
       puts combo[:message]
@@ -112,7 +151,7 @@ class Game
     end
   end
 
-
+# ......GAME INITIALIZING
 
   def initialize
 
@@ -144,10 +183,12 @@ class Game
       { item_id: 7, target_id: 12, usage_location: 12, message: "You use the prison keys to open the main prison hallway door. you escape to wherever" }
     ]
 
-    @inventory = [1, 8, 5]
+    @inventory = []
     @game_complete = false
     @current_room_id = 9
     @starting_game_text = true
+
+    @current_cell_items = @cell1_items
 
     @cell1_items = [1, 2, 3, 4, 8]
     @cell2_items = [2, 3, 4]
@@ -172,6 +213,7 @@ class Game
       # print out players command options
 
       puts "[M] Move player"
+      puts "[L] Look at"
       puts "[U] Use item"
 
       # gets user input
@@ -180,6 +222,9 @@ class Game
         
         if input.downcase == "m"
           player_move
+
+        elsif input.downcase == "l"
+          look_at
 
         elsif input.downcase == "u"
           print_things_i_can_currently_use
