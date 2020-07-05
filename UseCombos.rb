@@ -96,7 +96,7 @@ def look_at
   input = gets.chomp
   pause(0.5)
   if input.downcase == "i"
-    puts "still figuring this out"
+    puts look_at_inventory
 
   elsif input.downcase == "r"
     print_out_room_items
@@ -136,13 +136,20 @@ end
 # ......EVERYTHING BELOW IS INVENTORY RELATED
 
   def look_at_inventory
-    if @inventory = []
+    if @inventory == []
       puts "You don't have anything in your inventory"
     else
       print_inventory_items
     end
   end
 
+  def print_inventory_items
+    slow_type("\nHere are your inventory items;\n")
+      @inventory.each do |item_id|
+      item = find_item_by_id(item_id)
+      puts "[#{item.item_id}] #{item.name} - #{item.description}"
+    end
+  end
 
 
 
@@ -199,7 +206,7 @@ end
       12 => [2, 6, 7]
     }
 
-    @inventory = []
+    @inventory = [1, 8]
     @game_complete = false
     @current_room_id = 9
     @starting_game_text = true
