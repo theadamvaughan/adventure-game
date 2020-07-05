@@ -49,7 +49,7 @@ class Game
   def player_move
     slow_type("\nWhere would you like to move to?\n")
     # prints out players move options excluding the room they are in
-    @rooms.each_with_index do |room, index|
+    @rooms.each do |room|
       option = room.id
       @options << option
       puts "[#{option}] #{room.name}" unless room.id == @current_room_id
@@ -114,7 +114,6 @@ end
 
   def find_item_by_id(id)
     @items.each do |item|
-      # puts item
       return item if item.item_id == id
     end
   end
@@ -129,9 +128,30 @@ end
   def print_out_room_items
     current_cell_items.each do |item_id|
       item = find_item_by_id(item_id)
-      puts "[#{item.item_id}] #{item.name} - #{item.description}"
+      puts "[#{item.item_id}] #{item.name} - #{item.description}" unless @inventory.include?(item.item_id)
     end
   end
+
+# ......THE CODE THAT MAKES YOU PICK THINGS up
+
+def pick_up
+  slow_type("Here's what's in the room")
+  current_cell_items.each do |item_id|
+    item = find_item_by_id(item_id)
+    @options << item.item_id
+    puts "[#{item.item_id}] #{item.name}" unless @inventory.include?(item.item_id)
+  end
+  slow_type("What would you like to pick up?")
+  input = gets.chomp.to_i
+    if !@options.include?(input.to_i) 
+      slow_type("I don't know that command")
+    elsif !find_item_by_id(input.to_i).canBePickedUp
+      slow_type("you cannot pick that item up")
+    elsif find_item_by_id(input.to_i).canBePickedUp
+      @inventory << input.to_i
+    end
+end
+
 
 # ......EVERYTHING BELOW IS INVENTORY RELATED
 
@@ -151,7 +171,7 @@ end
     end
   end
 
-
+# ....... USE items_use_combos
 
   def items_use_combos
     item_combos = []
@@ -162,7 +182,7 @@ end
 
   def use_inventory_item
     items_use_combos.each do |combo|
-      puts combo[:message]
+      puts combo[:message] 
       puts find_item_by_id(combo[:item_id]).description 
     end
   end
@@ -206,7 +226,7 @@ end
       12 => [2, 6, 7]
     }
 
-    @inventory = [1, 8]
+    @inventory = []
     @game_complete = false
     @current_room_id = 9
     @starting_game_text = true
@@ -232,6 +252,7 @@ end
       puts "[M] Move player"
       puts "[L] Look at"
       puts "[U] Use item"
+      puts "[P] Pick up"
 
       # gets user input
 
@@ -242,6 +263,9 @@ end
 
         elsif input.downcase == "l"
           look_at
+
+        elsif input.downcase == "p"
+          pick_up
 
         elsif input.downcase == "u"
           use_inventory_item
