@@ -50,7 +50,7 @@ class Game
     slow_type("\nWhere would you like to move to?\n")
     # prints out players move options excluding the room they are in
     @rooms.each_with_index do |room, index|
-      option = index + 1
+      option = room.id
       @options << option
       puts "[#{option}] #{room.name}" unless room.id == @current_room_id
     end
@@ -64,7 +64,7 @@ class Game
         slow_type("#{find_room_by_id(@current_room_id).name} is locked, you'll need to find a way out") 
       elsif @options.include?(input.to_i) && !find_room_by_id(@current_room_id).isLocked
         # if so, updates the @current_room_id so the player moves
-        @current_room_id = input.to_i + 8
+        @current_room_id = input.to_i
         slow_type("\nYou have moved to #{find_room_by_id(@current_room_id).name}")
         slow_type("#{find_room_by_id(@current_room_id).description}")
         clear_options
@@ -99,7 +99,7 @@ def look_at
     puts "still figuring this out"
 
   elsif input.downcase == "r"
-    puts "still figuring this out"
+    print_out_room_items
 
   elsif input.downcase == "q"
     @game_complete = true
@@ -115,39 +115,48 @@ end
   def find_item_by_id(id)
     @items.each do |item|
       # puts item
-      puts item.name if item.item_id == id
+      return item if item.item_id == id
     end
   end
 
-
-# ........NEED TO WORK ON THIS - POSSIBLY LOOK AT PUTTING THE ROOM ITEM OPTIONS IN A HASH/ARRAY LIKE ROOMS AND ITEMS
+# ........THIS COE PRINTS OUT THE ITEMS IN THE ROOM 
 
 
   def current_cell_items
-    current_cell_items = @cell1_items
-    current_cell_items
+    @cell_items[@current_room_id]
   end
 
-  def print_out_room_items(current_cell_items)
-    cell_items = current_cell_items
-    cell_items.each do |num|
-      find_item_by_id(num)
+  def print_out_room_items
+    current_cell_items.each do |item_id|
+      item = find_item_by_id(item_id)
+      puts "[#{item.item_id}] #{item.name} - #{item.description}"
     end
   end
 
-# ......EVERYTHING BELOW HERE RELATES TO THE USE ITEM OPTION
+# ......EVERYTHING BELOW IS INVENTORY RELATED
 
-  def items_i_can_currently_use
+  def look_at_inventory
+    if @inventory = []
+      puts "You don't have anything in your inventory"
+    else
+      print_inventory_items
+    end
+  end
+
+
+
+
+  def items_use_combos
     item_combos = []
     @use_combos.each do |combo|
       item_combos << combo if @inventory.include?(combo[:item_id]) && combo[:usage_location] == @current_room_id
     end
   end
 
-  def print_things_i_can_currently_use
-    items_i_can_currently_use.each do |combo|
+  def use_inventory_item
+    items_use_combos.each do |combo|
       puts combo[:message]
-      puts find_item_by_id(combo[:item_id]).description
+      puts find_item_by_id(combo[:item_id]).description 
     end
   end
 
@@ -183,17 +192,18 @@ end
       { item_id: 7, target_id: 12, usage_location: 12, message: "You use the prison keys to open the main prison hallway door. you escape to wherever" }
     ]
 
+    @cell_items = {
+      9 => [1, 2, 3, 4, 8],
+      10 => [2, 3, 4],
+      11 => [2, 3, 4, 5],
+      12 => [2, 6, 7]
+    }
+
     @inventory = []
     @game_complete = false
     @current_room_id = 9
     @starting_game_text = true
-
     @current_cell_items = @cell1_items
-
-    @cell1_items = [1, 2, 3, 4, 8]
-    @cell2_items = [2, 3, 4]
-    @cell3_items = [2, 3, 4, 5]
-    @prison_hallway_items = [2, 6, 7]
 
   # bits to make the player_move work
 
@@ -227,7 +237,7 @@ end
           look_at
 
         elsif input.downcase == "u"
-          print_things_i_can_currently_use
+          use_inventory_item
         
         elsif input.downcase == "q"
           @game_complete = true
