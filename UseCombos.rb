@@ -47,34 +47,30 @@ class Game
   end
 
   def player_move
+    @options = []
     slow_type("\nWhere would you like to move to?\n")
     # prints out players move options excluding the room they are in
     @rooms.each do |room|
-      option = room.id
-      @options << option
-      puts "[#{option}] #{room.name}" unless room.id == @current_room_id
+      @options << room.id
+      puts "[#{room.id}] #{room.name}" unless room.id == @current_room_id
     end
     # gets player input
     input = gets.chomp
     pause(0.5)
     # confirms if the users input is valid
-    if @options.include?(input.to_i)
-    # # checks that the input is a number in the room_id and whether the room is not locked
-      if @options.include?(input.to_i) && find_room_by_id(@current_room_id).isLocked
+    if @options.include?(input.to_i) && find_room_by_id(@current_room_id).isLocked
         slow_type("#{find_room_by_id(@current_room_id).name} is locked, you'll need to find a way out") 
-      elsif @options.include?(input.to_i) && !find_room_by_id(@current_room_id).isLocked
+    elsif @options.include?(input.to_i) && !find_room_by_id(@current_room_id).isLocked
         # if so, updates the @current_room_id so the player moves
         @current_room_id = input.to_i
         slow_type("\nYou have moved to #{find_room_by_id(@current_room_id).name}")
         slow_type("#{find_room_by_id(@current_room_id).description}")
         clear_options
-      end
       # if user types q the game will quit
     elsif input.downcase == "q"
       @game_complete = true
     else
       slow_type("I don't know that command\n")
-      clear_options
     end
   end
 
@@ -134,7 +130,12 @@ end
 
 # ......THE CODE THAT MAKES YOU PICK THINGS up
 
+def put_item_in_inventory(input)
+  @inventory << input
+end
+
 def pick_up
+  @options = []
   slow_type("Here's what's in the room")
   current_cell_items.each do |item_id|
     item = find_item_by_id(item_id)
@@ -148,8 +149,25 @@ def pick_up
     elsif !find_item_by_id(input.to_i).canBePickedUp
       slow_type("you cannot pick that item up")
     elsif find_item_by_id(input.to_i).canBePickedUp
-      @inventory << input.to_i
+      pick_up_message(input.to_i)
     end
+end
+
+def pick_up_message(input)
+  if input == 8
+    slow_type("You have picked up a bobby pin")
+    put_item_in_inventory(input)
+  elsif input == 1 && !@inventory.include?(5)
+    slow_type("The mouse is too scared and runs into a hole in the wall")
+  elsif input == 1 && @inventory.include?(5)
+    slow_type("You tempt the mouse over with the cheese sandwich. As he's nibbling on the cheese, you pick him up and put him in your pocket")
+    put_item_in_inventory(input)
+  elsif input == 5
+    slow_type("You have picked up the mouldy cheese sandwich")
+    put_item_in_inventory(input)
+  else
+    slow_type("you're not suppose to see this")
+  end
 end
 
 
@@ -173,14 +191,29 @@ end
 
 # ....... USE items_use_combos
 
-  def items_use_combos
-    item_combos = []
-    @use_combos.each do |combo|
-      item_combos << combo if @inventory.include?(combo[:item_id]) && combo[:usage_location] == @current_room_id
+  def use_item
+    if @inventory == []
+      slow_type("You don't have anything in your inventory")
+    else
+    print_inventory_items
+    slow_type("what would you like to use?")
+    input = gets.chomp
+      if @inventory.include?(input.to_i)
+        items_use_combos
+        item_updates(input.to_i)
+      else
+        "you cannot use that item"
+      end
     end
   end
 
-  def use_inventory_item
+  def items_use_combos
+    @use_combos.each do |combo|
+      puts combo[:message] if @inventory.include?(combo[:item_id]) && combo[:usage_location] == @current_room_id
+    end
+  end
+
+  def use_inventory_item()
     items_use_combos.each do |combo|
       puts combo[:message] 
       puts find_item_by_id(combo[:item_id]).description 
@@ -209,7 +242,7 @@ end
       Room.new("Cell 2", "It's the prison cell next to yours. It's the same as yours but there's a female prison inside.", 10, false),
       Room.new("Cell 3", "It's the prison cell opposite yours. It open with nothing in it except a bed, chair and desk. On the desk appears to be a sandwich", 11, false),
       Room.new("the Prison Hallway", "At one end of the Prison Hallway is your cell and two others. At the other end sits a prison guard. The prison guard is asleep.", 12, false)
-    ].freeze
+    ]
 
     @use_combos = [
       { item_id: 8, target_id: 9, usage_location: 9, message: "You use the bobby pin to unlock your cell." },
@@ -232,9 +265,6 @@ end
     @starting_game_text = true
     @current_cell_items = @cell1_items
 
-  # bits to make the player_move work
-
-    @options = []
 
   end
 
@@ -268,7 +298,7 @@ end
           pick_up
 
         elsif input.downcase == "u"
-          use_inventory_item
+          use_item
         
         elsif input.downcase == "q"
           @game_complete = true
