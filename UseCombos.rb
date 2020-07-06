@@ -42,10 +42,6 @@ class Game
     end
   end
 
-  def clear_options
-    @options = []
-  end
-
   def player_move
     @options = []
     slow_type("\nWhere would you like to move to?\n")
@@ -92,7 +88,7 @@ def look_at
   input = gets.chomp
   pause(0.5)
   if input.downcase == "i"
-    puts look_at_inventory
+    look_at_inventory
 
   elsif input.downcase == "r"
     print_out_room_items
@@ -114,8 +110,7 @@ end
     end
   end
 
-# ........THIS COE PRINTS OUT THE ITEMS IN THE ROOM 
-
+# ........THIS CODE PRINTS OUT THE ITEMS IN THE ROOM 
 
   def current_cell_items
     @cell_items[@current_room_id]
@@ -131,50 +126,35 @@ end
 # ......THE CODE THAT MAKES YOU PICK THINGS up
 
 def put_item_in_inventory(input)
-  @inventory << input
+  if find_item_by_id(input).canBePickedUp
+    unless @inventory.include?(input)
+      @inventory << input
+      puts "You have picked up the #{find_item_by_id(input).name}"
+    end
+  else
+    slow_type("You cannot pick up this item")
+  end
 end
 
 def pick_up
-  @options = []
   slow_type("Here's what's in the room")
   current_cell_items.each do |item_id|
     item = find_item_by_id(item_id)
-    @options << item.item_id
     puts "[#{item.item_id}] #{item.name}" unless @inventory.include?(item.item_id)
   end
   slow_type("What would you like to pick up?")
   input = gets.chomp.to_i
-    if !@options.include?(input.to_i) 
-      slow_type("I don't know that command")
-    elsif !find_item_by_id(input.to_i).canBePickedUp
-      slow_type("you cannot pick that item up")
-    elsif find_item_by_id(input.to_i).canBePickedUp
-      pick_up_message(input.to_i)
-    end
-end
-
-def pick_up_message(input)
-  if input == 8
-    slow_type("You have picked up a bobby pin")
-    put_item_in_inventory(input)
-  elsif input == 1 && !@inventory.include?(5)
-    slow_type("The mouse is too scared and runs into a hole in the wall")
-  elsif input == 1 && @inventory.include?(5)
-    slow_type("You tempt the mouse over with the cheese sandwich. As he's nibbling on the cheese, you pick him up and put him in your pocket")
-    put_item_in_inventory(input)
-  elsif input == 5
-    slow_type("You have picked up the mouldy cheese sandwich")
+  if current_cell_items.include?(input) && !@inventory.include?(input)
     put_item_in_inventory(input)
   else
-    slow_type("you're not suppose to see this")
+    slow_type("I don't know that command")
   end
 end
-
 
 # ......EVERYTHING BELOW IS INVENTORY RELATED
 
   def look_at_inventory
-    if @inventory == []
+    if @inventory.empty?
       puts "You don't have anything in your inventory"
     else
       print_inventory_items
@@ -183,7 +163,7 @@ end
 
   def print_inventory_items
     slow_type("\nHere are your inventory items;\n")
-      @inventory.each do |item_id|
+    @inventory.each do |item_id|
       item = find_item_by_id(item_id)
       puts "[#{item.item_id}] #{item.name} - #{item.description}"
     end
@@ -238,7 +218,7 @@ end
   #  generating the rooms
 
     @rooms = [
-      Room.new("Your Cell", "It's a dirty room with no windows. It contains a bed, chair and desk. There's a mouse in the corner of the room.", 9, false), 
+      Room.new("Your Cell", "It's a dirty room with no windows. It contains a bed, chair and desk. There's a mouse in the corner of the room.", 9, true), 
       Room.new("Cell 2", "It's the prison cell next to yours. It's the same as yours but there's a female prison inside.", 10, false),
       Room.new("Cell 3", "It's the prison cell opposite yours. It open with nothing in it except a bed, chair and desk. On the desk appears to be a sandwich", 11, false),
       Room.new("the Prison Hallway", "At one end of the Prison Hallway is your cell and two others. At the other end sits a prison guard. The prison guard is asleep.", 12, false)
@@ -264,7 +244,6 @@ end
     @current_room_id = 9
     @starting_game_text = true
     @current_cell_items = @cell1_items
-
 
   end
 
