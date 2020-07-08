@@ -32,7 +32,6 @@ class Game
   end
 
   def slow_type(text)
-    @debug = true
 
     if !@debug
       text.each_char {|c| putc c ; sleep 0.04; $stdout.flush }
@@ -44,6 +43,14 @@ class Game
 
   end
 
+  def starting_game_text
+    slow_type("You wake up in a prison cell. You have no idea how you got there.")
+    slow_type("#{find_room_by_id(@current_room_id).description}")
+    slow_type("There's two other cells, one opposite yours, and one next to you.")
+    slow_type("They are at the end of a prison hallway. At the other end is the exit.")
+    slow_type("There's a guard blocking the exit. He's sitting next to a desk and is asleep.")
+  end
+
   def player_move
     @options = []
     slow_type("\nWhere would you like to move to?\n")
@@ -53,22 +60,22 @@ class Game
       puts "[#{room.id}] #{room.name}" unless room.id == @current_room_id
     end
 
-    input = gets.chomp
+    input = gets.chomp.to_i
     pause(0.5)
 
-    if @options.include?(input.to_i) && find_room_by_id(@current_room_id).isLocked
+    if @options.include?(input) && find_room_by_id(@current_room_id).isLocked
         slow_type("#{find_room_by_id(@current_room_id).name} is locked, you'll need to find a way out") 
 
-    elsif @options.include?(input.to_i) && find_room_by_id(input.to_i).isLocked
-        slow_type("You cannot get to #{find_room_by_id(input.to_i).name}. You'll need to find a way to escape")
+    elsif @options.include?(input) && find_room_by_id(input.to_i).isLocked
+        slow_type("You cannot get to #{find_room_by_id(input.to_i).name}. it is currently locked")
 
-    elsif @options.include?(input.to_i) && !find_room_by_id(@current_room_id).isLocked
+    elsif @options.include?(input) && !find_room_by_id(@current_room_id).isLocked
 
-        @current_room_id = input.to_i
+        @current_room_id = input
         slow_type("\nYou have moved to #{find_room_by_id(@current_room_id).name}")
         slow_type("#{find_room_by_id(@current_room_id).description}")
 
-    elsif input.downcase == "q"
+    elsif input.to_s.downcase == "q"
       @game_complete = true
 
     else
@@ -136,7 +143,7 @@ end
 
   end
 
-# ......THE CODE THAT MAKES YOU PICK THINGS up
+# ....... CODE ADDS ITEMS INTO YOUR INVENTORY
 
 def put_item_in_inventory(input)
 
@@ -149,7 +156,10 @@ def put_item_in_inventory(input)
   else
     slow_type("You cannot pick up this item")
   end
+
 end
+
+# ......THE CODE THAT MAKES YOU PICK THINGS UP
 
 def pick_up
 
@@ -184,18 +194,23 @@ end
   end
 
   def print_inventory_items
+
     slow_type("\nHere are your inventory items;\n")
+
     @inventory.each do |item_id|
       item = find_item_by_id(item_id)
       puts "[#{item.item_id}] #{item.name} - #{item.description}"
     end
+
   end
 
 # ....... USE items_use_combos
 
   def use_item
+
     if @inventory.empty?
       slow_type("You don't have anything in your inventory")
+
     else
       print_inventory_items
 
@@ -209,15 +224,13 @@ end
         target_item = gets.chomp.to_i
 
         combo = @use_combos.find { |combo| combo[:item_id] == item_id && combo[:usage_location] == @current_room_id && combo[:target_id] == target_item}
+        
         if combo.nil?
           slow_type("You cannot use these two items together") 
 
         else 
           slow_type(combo[:message])
-          if combo[:cell_to_unlock]
-            find_room_by_id(combo[:cell_to_unlock]).isLocked = false
-          end
-
+          find_room_by_id(combo[:cell_to_unlock]).isLocked = false
         end
         # need it to perform the action
         # change the state of the target item if necessary
@@ -239,8 +252,9 @@ end
     items_use_combos.each do |combo|
       puts combo[:message] 
       puts find_item_by_id(combo[:item_id]).description 
+
     end
-    
+
   end
 
 # ......GAME INITIALIZING
@@ -273,10 +287,10 @@ end
     ]
 
     @use_combos = [
-      { item_id: 8, target_id: 14, usage_location: 9, message: "You have used the bobby pin to unlock your cell.", cell_to_unlock: 9},
-      { item_id: 5, target_id: 1, usage_location: 9, message: "You have used the cheese sandwich to tempt the mouse and pick him up." },
-      { item_id: 1, target_id: 6, usage_location: 12, message: "You take the mouse out of your pocket and it runs towards the guard." },
-      { item_id: 7, target_id: 10, usage_location: 12, message: "You use the prison keys to open the cell 2 to release the female prisoner", cell_to_unlock: 10 },
+      { item_id: 8, target_id: 14, usage_location: 9, message: "You have used the bobby pin to unlock your cell. You gently open the door so you do not wake up the guard.", cell_to_unlock: 9},
+      { item_id: 5, target_id: 1, usage_location: 9, message: "You have used the cheese sandwich to tempt the mouse over to you. As he is nibbling on the cheese you pick him up." },
+      { item_id: 1, target_id: 6, usage_location: 12, message: "You take the mouse out of your pocket and it runs towards the guard. The guard screams and runs directly into the wall, knocking himself out"},
+      { item_id: 7, target_id: 15, usage_location: 12, message: "You use the prison keys to open the cell 2 to release the female prisoner", cell_to_unlock: 10 },
       { item_id: 7, target_id: 13, usage_location: 12, message: "You use the prison keys to open the main prison hallway door. you escape to wherever", cell_to_unlock: 11 }
     ]
 
@@ -284,7 +298,7 @@ end
       9 => [1, 2, 3, 4, 8, 14],
       10 => [2, 3, 4, 15],
       11 => [2, 3, 4, 5, 16],
-      12 => [2, 6, 7, 17]
+      12 => [2, 6, 7, 14, 15, 16, 17]
     }
 
     @inventory = []
@@ -292,6 +306,7 @@ end
     @current_room_id = 9
     @starting_game_text = true
     @current_cell_items = @cell1_items
+    @debug = false
 
   end
 
@@ -301,8 +316,12 @@ end
     while @game_complete == false
 
       # starting game text to help the player create a mental picture of the environment
+      
+      puts starting_game_text unless @debug == true || @starting_game_text == false
+      @starting_game_text = false
 
-      puts "What would you like to do?\n"
+      slow_type("You are in #{find_room_by_id(@current_room_id).name}")
+      slow_type("What would you like to do?\n")
 
       # print out players command options
 
