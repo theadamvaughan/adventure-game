@@ -87,15 +87,18 @@ class Game
 # ......FINDING ROOMS
 
   def find_room_by_id(id)
+
     @rooms.each do |room|
       return room if room.id == id
     end
+
   end
 
 
 def look_at
   pause(0.5)
   slow_type("\nWhat would you like to look at?\n\n")
+
   puts "[I] Inventory item"
   puts "[R] Whats in the room"
 
@@ -242,17 +245,9 @@ end
   end
 
   def items_use_combos
+
     @use_combos.each do |combo|
       puts combo[:message] if @inventory.include?(combo[:item_id]) && combo[:usage_location] == @current_room_id
-    end
-  end
-
-  def use_inventory_item()
-
-    items_use_combos.each do |combo|
-      puts combo[:message] 
-      puts find_item_by_id(combo[:item_id]).description 
-
     end
 
   end
@@ -306,7 +301,7 @@ end
     @current_room_id = 9
     @starting_game_text = true
     @current_cell_items = @cell1_items
-    @debug = false
+    @debug = true
 
   end
 
