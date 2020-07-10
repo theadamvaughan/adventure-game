@@ -71,10 +71,15 @@ class Game
 # ................. TEXT AT THE START OF THE GAME
 
   def player_set_up
-    slow_type("Please enter your name:")
-    @player_name = gets.chomp
-    slow_type("\nThank you, #{@player_name}")
-    slow_type("\nmTime to start the game...\n")
+
+      if @debug == false
+        slow_type("Please enter your name and hit enter:")
+        @player_name = gets.chomp!
+        slow_type("\nThank you, #{@player_name}")
+        slow_type("\nTime to start the game...\n")
+      else
+        @player_name = "Mr Developer"
+      end
   end
 
   def starting_game_text
@@ -369,12 +374,35 @@ class Game
 
   end
 
+# ............ DISCUSSION WITH LIBERTY
+
+  def liberty_discussion
+
+    @talk_id
+      until @liberty_discussion_is_complete == true
+        message = @liberty_conversation.find { |message| message[:talk_id] == @talk_id }
+        print "#{message[:character]}: "
+        slow_type("#{message[:message]}")
+        @talk_id = message[:next_talk_id]
+        if message[:talk_id] == 19
+          @liberty_discussion_is_complete = true
+          @talk_id = 18
+          find_item_by_id(8).show_item = true
+        end
+      end
+
+  end
+
+
+
 # ............ RESET GAME AND GAME COMPLETE CODE
 
   def reset_game
     @current_room_id = 9
     find_room_by_id(9).isLocked = true
     @liberty_discussion_is_complete = false
+    find_item_by_id(8).show_item = false
+    @inventory.delete(8)
   end
 
   def game_complete
@@ -432,44 +460,27 @@ class Game
 
     @liberty_conversation = [
 
-      { talk_id: 1, message: "Hi, my name is #{@player_name}, what's you're name?" },
-      { talk_id: 2, message: "My name is Liberty. What brings you here?" },
-      { talk_id: 3, message: "I don't know, I'm not sure how I got here. Where are we?" },
-      { talk_id: 4, message: "Fuck knows, all I know is that I have a pounding headache. Any idea how I got here?" },
-      { talk_id: 5, message: "You're onboard the Spaceship Caerus. It’s a holding vessel for the Ahrimanian Empire." },
-      { talk_id: 6, message: "Great. Any idea how or why I got here?" },
-      { talk_id: 7, message: "No idea what you have been bought in here for. Although I did hear one of the guards mutter something about finding your spaceship floating in space." },
-      { talk_id: 8, message: "So what is this place?" },
-      { talk_id: 9, message: "Perfect. So what did you do to end up here?" },
-      { talk_id: 10, message: "Got caught salvaging parts from an abandoned space outpost. It was out of their jurisdiction but they decided to pick me up anyway." },
-      { talk_id: 11, message: "Looks like we're doomed. Anything I can hang myself with?" },
-      { talk_id: 12, message: "You could try and use my shoelaces, but I don't think that's a good idea." },
-      { talk_id: 13, message: "Know of a way to get out?" },
-      { talk_id: 14, message: "The place looks well sealed to me. If you can find a way of getting the keys off the guards desk you can bust us out." },
-      { talk_id: 15, message: "Looks too far away and there's no way of reaching it. If you have something small and thin, I could try and pick the lock on my cell door." },
-      { talk_id: 16, message: "My hair is held back with bobby pins, would one of those do?" },
-      { talk_id: 17, message: "Yeah, that could work. Chuck one into my cell." },
-      { talk_id: 18, message: "Hey, Liberty, any chance of another Bobby Pin?" },
-      { talk_id: 19, message: "Sure, here you go" }
+      { talk_id: 1, next_talk_id: 2, character: player_set_up, message: "Hi, my name is #{player_set_up}, what's you're name?" },
+      { talk_id: 2, next_talk_id: 3, character: "Liberty", message: "My name is Liberty. What brings you here?" },
+      { talk_id: 3, next_talk_id: 5, character: player_set_up, message: "I don't know, I'm not sure how I got here. Where are we?" },
+      { talk_id: 4, next_talk_id: 7, character: player_set_up, message: "Fuck knows, all I know is that I have a pounding headache. Any idea how I got here?" },
+      { talk_id: 5, next_talk_id: 6, character: "Liberty", message: "You're onboard the Spaceship Caerus. It’s a holding vessel for the Ahrimanian Empire." },
+      { talk_id: 6, next_talk_id: 7, character: player_set_up, message: "Great. Any idea how or why I got here?" },
+      { talk_id: 7, next_talk_id: 9, character: "Liberty", message: "No idea what you have been bought in here for. Although I did hear one of the guards mutter something about finding your spaceship floating in space." },
+      { talk_id: 8, next_talk_id: 5, character: player_set_up, message: "So what is this place?" },
+      { talk_id: 9, next_talk_id: 10, character: player_set_up, message: "Perfect. So what did you do to end up here?" },
+      { talk_id: 10, next_talk_id: 11, character: "Liberty", message: "Got caught salvaging parts from an abandoned space outpost. It was out of their jurisdiction but they decided to pick me up anyway." },
+      { talk_id: 11, next_talk_id: 12, character: player_set_up, message: "Looks like we're doomed. Anything I can hang myself with?" },
+      { talk_id: 12, next_talk_id: 13, character: "Liberty", message: "You could try and use my shoelaces, but I don't think that's a good idea." },
+      { talk_id: 13, next_talk_id: 14, character: player_set_up, message: "Know of a way to get out?" },
+      { talk_id: 14, next_talk_id: 15, character: "Liberty", message: "The place looks well sealed to me. If you can find a way of getting the keys off the guards desk you can bust us out." },
+      { talk_id: 15, next_talk_id: 16, character: player_set_up, message: "Looks too far away and there's no way of reaching it. If you have something small and thin, I could try and pick the lock on my cell door." },
+      { talk_id: 16, next_talk_id: 17, character: "Liberty", message: "My hair is held back with bobby pins, would one of those do?" },
+      { talk_id: 17, next_talk_id: 19, character: player_set_up, message: "Yeah, that could work. Chuck one into my cell." },
+      { talk_id: 18, next_talk_id: 19, character: player_set_up, message: "Hey, Liberty, any chance of another Bobby Pin?" },
+      { talk_id: 19, next_talk_id: 18, character: "Liberty", message: "Sure, here you go" }
 
     ]
-
-  def liberty_discussion
-    
-    until @liberty_discussion_is_complete == true
-    @liberty_conversation.each do |discussion|
-
-        @chat_option = 18
-        puts "#{discussion[:message]}" if discussion[:talk_id] == @chat_option
-        @chat_option = 19
-        puts "#{discussion[:message]}" if discussion[:talk_id] == @chat_option
-        @liberty_discussion_is_complete = true
-        find_item_by_id(8).show_item = true
-
-      end
-    end
-
-  end
 
 
 # .......... GENERATES THE ITEMS IN EACH CELL
@@ -488,13 +499,13 @@ class Game
     @current_room_id = 9
     @starting_game_text = true
     @current_cell_items = @cell1_items
-    @player_name = []
+    @player_name = @player_name
     @liberty_discussion_is_complete = false
+    @talk_id = 1
 
 # .......... SET DEBUG TO TRUE IF CODE BUILDING/DEBUGGING
 
-    @player_name = "Mr Developer"
-    @debug = true
+    @debug = false
 
   end
 
@@ -505,7 +516,7 @@ class Game
     while @game_complete == false
 
       # starting game text to help the player create a mental picture of the environment
-      puts player_set_up unless @debug == true || @starting_game_text == false
+      player_set_up unless @debug == true || @starting_game_text == false
       puts starting_game_text unless @debug == true || @starting_game_text == false
       @starting_game_text = false
       
