@@ -12,15 +12,16 @@ class Room
 end
 
 class Item
-  attr_accessor(:name, :description, :item_id, :canBePickedUp, :isPickedUp, :pick_up_dependency_met)
+  attr_accessor(:name, :description, :item_id, :canBePickedUp, :isPickedUp, :pick_up_dependency_met, :show_item)
 
-  def initialize(name, description, item_id, canBePickedUp, pick_up_dependency_met = true)
+  def initialize(name, description, item_id, canBePickedUp, pick_up_dependency_met = true, show_item = true)
     @name = name
     @description = description
     @item_id = item_id
     @canBePickedUp = canBePickedUp
     @isPickedUp = false
     @pick_up_dependency_met = pick_up_dependency_met
+    @show_item = show_item
   end
 
 end
@@ -69,6 +70,13 @@ class Game
 
 # ................. TEXT AT THE START OF THE GAME
 
+  def player_set_up
+    slow_type("Please enter your name:")
+    @player_name = gets.chomp
+    slow_type("\nThank you, #{@player_name}")
+    slow_type("\nmTime to start the game...\n")
+  end
+
   def starting_game_text
     slow_type("\nAs you slowly start to regain consciousness, you feel the coldness of the floor, and the damp in the air.") 
     slow_type("As your eyes slowly open and focus on your surroundings, you notice that you are in a prison cell.")
@@ -85,13 +93,12 @@ class Game
 # ................. GAME COMPELETE TEXT
 
   def game_complete_text
-    slow_type("\nCongratulations! You have found your way out!")
+    slow_type("\nCongratulations, #{@player_name}! You have found your way out!")
     pause(0.5)
     slow_type("Written, developed and coded by Adam Vaughan and Danny Smith")
     pause(0.5)
     slow_type("Stayed tuned for more levels")
   end
-
 
 # .................. ADDITIONAL TEXT
 
@@ -174,7 +181,7 @@ class Game
 
     current_cell_items.each do |item_id|
       item = find_item_by_id(item_id)
-      puts "[#{item.item_id}] #{item.name} - #{item.description}" unless @inventory.include?(item.item_id)
+      puts "[#{item.item_id}] #{item.name} - #{item.description}" unless @inventory.include?(item.item_id) || item.show_item == false
     end
 
   end
@@ -367,6 +374,7 @@ class Game
   def reset_game
     @current_room_id = 9
     find_room_by_id(9).isLocked = true
+    @liberty_discussion_is_complete = false
   end
 
   def game_complete
@@ -386,7 +394,7 @@ class Game
       Item.new("Cheese Sandwich", "A mouldy cheese sandwich. No human would want to eat this", 5, true),
       Item.new("Prison Guard", "He's a large man, clearly been eating too many pies", 6, false),
       Item.new("Prison Keys", "A bunch of keys that open all the cells and the cell room main door", 7, true, false),
-      Item.new("Bobby Pin", "Good for holding back hair and picking locks", 8, true),
+      Item.new("Bobby Pin", "Good for holding back hair and picking locks", 8, true, true, false),
       Item.new("Your Cell Door", "Made of steel and looks pretty sturdy", 14, false),
       Item.new("Cell 2 Door", "Made of steel and looks pretty sturdy", 15, false),
       Item.new("Cell 3 Door", "Made of steel and looks pretty sturdy", 16, false),
@@ -409,7 +417,7 @@ class Game
       { item_id: 8, target_id: 14, usage_location: 9, message: "\nYou have used the Bobby Pin to unlock your Cell. You gently open the door so you do not wake up the guard.", cell_to_unlock: 9},
       { item_id: 5, target_id: 1, usage_location: 9, message: "\nYou have used the Cheese Sandwich to tempt the Mouse over to you. He seems fairly calm eating the cheese." },
       { item_id: 1, target_id: 6, usage_location: 12, message: "\nYou take the Mouse out of your pocket and it runs towards the guard. The guard screams and runs directly into the wall, knocking himself out"},
-      { item_id: 7, target_id: 15, usage_location: 12, message: "\nYou use the Prison Keys to open the cell 2 to release the Female Prisoner", cell_to_unlock: 10 },
+      { item_id: 7, target_id: 15, usage_location: 12, message: "\nYou use the Prison Keys to open the cell 2 and release Liberty", cell_to_unlock: 10 },
       { item_id: 7, target_id: 17, usage_location: 12, message: "\nYou use the Prison Keys to open the main Prison Hallway door. You escape to level 2...", cell_to_unlock: 13, game_complete: true }
     ]
 
@@ -419,6 +427,50 @@ class Game
       { item_id: 1, depends_on: 5, message: "\nThe Mouse gets scared and runs into a hole in the wall. You'll need to find a way to tempt him out." },
       { item_id: 7, depends_on: 1, message: "\nWhen you reach over to pick up the Prison Keys you wake up the guard. \nThe Guard grabs you and puts you back in Your Cell before heading back to his chair and falling asleep.", reset_game: true }
     ]
+
+# .......... CONVERSATION WITH LIBERTY
+
+    @liberty_conversation = [
+
+      { talk_id: 1, message: "Hi, my name is #{@player_name}, what's you're name?" },
+      { talk_id: 2, message: "My name is Liberty. What brings you here?" },
+      { talk_id: 3, message: "I don't know, I'm not sure how I got here. Where are we?" },
+      { talk_id: 4, message: "Fuck knows, all I know is that I have a pounding headache. Any idea how I got here?" },
+      { talk_id: 5, message: "You're onboard the Spaceship Caerus. It’s a holding vessel for the Ahrimanian Empire." },
+      { talk_id: 6, message: "Great. Any idea how or why I got here?" },
+      { talk_id: 7, message: "No idea what you have been bought in here for. Although I did hear one of the guards mutter something about finding your spaceship floating in space." },
+      { talk_id: 8, message: "So what is this place?" },
+      { talk_id: 9, message: "Perfect. So what did you do to end up here?" },
+      { talk_id: 10, message: "Got caught salvaging parts from an abandoned space outpost. It was out of their jurisdiction but they decided to pick me up anyway." },
+      { talk_id: 11, message: "Looks like we're doomed. Anything I can hang myself with?" },
+      { talk_id: 12, message: "You could try and use my shoelaces, but I don't think that's a good idea." },
+      { talk_id: 13, message: "Know of a way to get out?" },
+      { talk_id: 14, message: "The place looks well sealed to me. If you can find a way of getting the keys off the guards desk you can bust us out." },
+      { talk_id: 15, message: "Looks too far away and there's no way of reaching it. If you have something small and thin, I could try and pick the lock on my cell door." },
+      { talk_id: 16, message: "My hair is held back with bobby pins, would one of those do?" },
+      { talk_id: 17, message: "Yeah, that could work. Chuck one into my cell." },
+      { talk_id: 18, message: "Hey, Liberty, any chance of another Bobby Pin?" },
+      { talk_id: 19, message: "Sure, here you go" }
+
+    ]
+
+  def liberty_discussion
+    
+    until @liberty_discussion_is_complete == true
+    @liberty_conversation.each do |discussion|
+
+        @chat_option = 18
+        puts "#{discussion[:message]}" if discussion[:talk_id] == @chat_option
+        @chat_option = 19
+        puts "#{discussion[:message]}" if discussion[:talk_id] == @chat_option
+        @liberty_discussion_is_complete = true
+        find_item_by_id(8).show_item = true
+
+      end
+    end
+
+  end
+
 
 # .......... GENERATES THE ITEMS IN EACH CELL
 
@@ -436,10 +488,13 @@ class Game
     @current_room_id = 9
     @starting_game_text = true
     @current_cell_items = @cell1_items
+    @player_name = []
+    @liberty_discussion_is_complete = false
 
 # .......... SET DEBUG TO TRUE IF CODE BUILDING/DEBUGGING
 
-    @debug = false
+    @player_name = "Mr Developer"
+    @debug = true
 
   end
 
@@ -450,7 +505,7 @@ class Game
     while @game_complete == false
 
       # starting game text to help the player create a mental picture of the environment
-      
+      puts player_set_up unless @debug == true || @starting_game_text == false
       puts starting_game_text unless @debug == true || @starting_game_text == false
       @starting_game_text = false
       
@@ -463,6 +518,7 @@ class Game
       puts "[L] Look at"
       puts "[U] Use item"
       puts "[P] Pick up"
+      puts "[T] Talk"
 
       # gets user input
       print "\nInput: "
@@ -479,6 +535,9 @@ class Game
 
         elsif input.downcase == "u"
           use_item
+
+        elsif input.downcase == "t"
+          liberty_discussion
         
         elsif input.downcase == "q"
           @game_complete = true
