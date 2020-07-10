@@ -154,36 +154,6 @@ class Game
     return nil
   end
 
-
-  def look_at
-    pause(0.25)
-    slow_type("\nWhat would you like to look at?\n")
-
-    puts "[I] Inventory item"
-    puts "[R] Whats in the room"
-
-    print "\nInput: "
-
-    input = gets.chomp
-    pause(0.5)
-
-    if input.downcase == "i"
-      look_at_inventory
-
-    elsif input.downcase == "r"
-      slow_type("\nHere's what's in #{find_room_by_id(@current_room_id).name}:\n")
-      print_out_room_items
-
-    elsif input.downcase == "q"
-      @game_complete = true
-    
-    else 
-      slow_type("\nI don't know that command")
-      look_at
-    end
-
-  end
-
 # ......LOCATING ITEMS BASED OFF ITEM_ID
 
   def find_item_by_id(id)
@@ -271,7 +241,36 @@ class Game
 
   end
 
-# .......... CODE TO SHOW INVENTORY
+# .......... LOOK AT CODE AND PRINTING INVENTORY
+
+  def look_at
+    pause(0.25)
+    slow_type("\nWhat would you like to look at?\n")
+
+    puts "[I] Inventory item"
+    puts "[R] Whats in the room"
+
+    print "\nInput: "
+
+    input = gets.chomp
+    pause(0.5)
+
+    if input.downcase == "i"
+      look_at_inventory
+
+    elsif input.downcase == "r"
+      slow_type("\nHere's what's in #{find_room_by_id(@current_room_id).name}:\n")
+      print_out_room_items
+
+    elsif input.downcase == "q"
+      @game_complete = true
+    
+    else 
+      slow_type("\nI don't know that command")
+      look_at
+    end
+
+  end
 
   def look_at_inventory
 
