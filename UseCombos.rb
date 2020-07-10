@@ -46,6 +46,8 @@ end
 
 class Game
 
+# ................. GAME STYLING - PAUSES AND SLOW TYPE
+
   def pause(input)
     $stdout.flush
     sleep input
@@ -63,6 +65,8 @@ class Game
 
   end
 
+# ................. TEXT AT THE START OF THE GAME
+
   def starting_game_text
     slow_type("\nAs you slowly start to regain consciousness, you feel the coldness of the floor, and the damp in the air.") 
     slow_type("As your eyes slowly open and focus on your surroundings, you notice that you are in a prison cell.")
@@ -75,6 +79,19 @@ class Game
     slow_type("There's a guard at the end of the prison hallway blocking the exit. He's sitting next to a desk and is asleep.")
     slow_type("You need to find out how you got there but first, you must find a way out of the prison cell block.")
   end
+
+# ................. GAME COMPELETE TEXT
+
+  def game_complete_text
+    slow_type("\nCongratulations! You have found your way out!")
+    pause(0.5)
+    slow_type("Written, developed and coded by Adam Vaughan and Danny Smith")
+    pause(0.5)
+    slow_type("Stayed tuned for more levels")
+  end
+
+
+# ................ CONTROLS HOW AND IF THE PLAYER CAN MOVE
 
   def player_move
     @options = []
@@ -147,7 +164,7 @@ class Game
 
   end
 
-# ......FINDING ITEMS AND PRINTING OUT CELL ITEMS
+# ......LOCATING ITEMS BASED OFF ITEM_ID
 
   def find_item_by_id(id)
 
@@ -158,7 +175,7 @@ class Game
   end
 
 # ........THIS CODE PRINTS OUT THE ITEMS IN THE ROOM 
-
+  
   def current_cell_items
     @cell_items[@current_room_id]
   end
@@ -217,19 +234,23 @@ class Game
     end
   end
 
+# .......... THIS CODE CHECKS IF PICK UP DEPENDENCIES HAVE BEEN MET
+
   def pick_up_checks(input)
       
-      item = find_item_by_id(input).pick_up_dependency_met
-      if item == false
-        @pick_up_rules.each do |rule|
-          puts rule[:message] if rule[:item_id] == input
-          end
-      end
+    if find_item_by_id(input).pick_up_dependency_met
+      put_item_in_inventory(input)
 
-      # check if it is a reset game boolean
+    else
+      @pick_up_rules.each do |rule|
+        slow_type("#{rule[:message]}") if rule[:item_id] == input
+        reset_game if rule[:reset_game]
+      end
+    end
+
   end
 
-# ......EVERYTHING BELOW IS INVENTORY RELATED
+# .......... CODE TO SHOW INVENTORY
 
   def look_at_inventory
 
@@ -252,7 +273,7 @@ class Game
 
   end
 
-# ....... USE items_use_combos
+# ........... CODE TO USE ITEMS 
 
   def use_item
 
@@ -282,6 +303,7 @@ class Game
 
           if combo[:cell_to_unlock]
             find_room_by_id(combo[:cell_to_unlock]).isLocked = false
+            game_complete if combo[:game_complete]
           end
 
         end
@@ -294,6 +316,21 @@ class Game
     end
   end
 
+  def use_item_dependency(input)
+    
+    @pick_up_rules.each do |rule|
+      if rule[:depends_on] == input
+        find_item_by_id(rule[:item_id]).pick_up_dependency_met = true
+      end
+    
+      @use_item
+    
+    find_item_by_id(input)
+    # when we use an item it might need to change the pick_up_dependency
+    end
+    
+  end
+
   def items_use_combos
 
     @use_combos.each do |combo|
@@ -302,7 +339,19 @@ class Game
 
   end
 
-# ......GAME INITIALIZING
+  def reset_game
+    @current_room_id = 9
+    find_room_by_id(9).isLocked = true
+  end
+
+  def game_complete
+    game_complete_text
+    @game_complete = true
+  end
+
+
+
+# ...... GAME INITIALIZING
 
   def initialize
 
@@ -321,7 +370,7 @@ class Game
       Item.new("Door to the Outside World", "Huge metal door with a small window", 17, false),
     ].freeze
 
-  #  generating the rooms
+# ....... GENERATING ROOMS
 
     @rooms = [
       Room.new("Your Cell", "It's a dirty room with no windows. It contains a metal bed, chair and desk.", 9, true), 
@@ -331,51 +380,24 @@ class Game
       Room.new("The Outside World", "You'll need to find a way to get here", 13, true)
     ]
 
+# ......... CODE THAT DETERMINES WHAT ITEMS CAN BE USED TOGETHER
+
     @use_combos = [
       { item_id: 8, target_id: 14, usage_location: 9, message: "You have used the bobby pin to unlock your cell. You gently open the door so you do not wake up the guard.", cell_to_unlock: 9},
       { item_id: 5, target_id: 1, usage_location: 9, message: "You have used the cheese sandwich to tempt the mouse over to you. He seems fairly calm eating the cheese." },
       { item_id: 1, target_id: 6, usage_location: 12, message: "You take the mouse out of your pocket and it runs towards the guard. The guard screams and runs directly into the wall, knocking himself out"},
       { item_id: 7, target_id: 15, usage_location: 12, message: "You use the prison keys to open the cell 2 to release the female prisoner", cell_to_unlock: 10 },
-      { item_id: 7, target_id: 13, usage_location: 12, message: "You use the prison keys to open the main prison hallway door. you escape to wherever", cell_to_unlock: 11 }
+      { item_id: 7, target_id: 17, usage_location: 12, message: "You use the prison keys to open the main prison hallway door. You escape to level 2...", cell_to_unlock: 13, game_complete: true }
     ]
+
+# .......... CODE FOR WHEN PICK UP DEPENDENCIES HAVEN'T BEEN MET
 
     @pick_up_rules = [
       { item_id: 1, depends_on: 5, message: "The mouse gets scared and runs into the hole in the wall. You'll need to find a way to tempt him out" },
       { item_id: 7, depends_on: 1, message: "When you reach over to pick up the Prison Keys you wake up the guard. The guard grabs you and puts you back in Your Cell before heading back to his chair and falling asleep", reset_game: true }
     ]
 
-
-  def pick_up_checks(input)
-      
-      if find_item_by_id(input).pick_up_dependency_met
-        put_item_in_inventory(input)
-      else
-        @pick_up_rules.each do |rule|
-          slow_type("#{rule[:message]}") if rule[:item_id] == input
-          reset_game if rule[:reset_game]
-        end
-      end
-  end
-
-
-def reset_game
-  puts "reset the game"
-  # TO DO
-end
-
-# new use item update dependencies method check
-def use_item_dependency(input)
-    # whenever we use an item, we run through the pick_up_rules
-    @pick_up_rules.each do |rule|
-      if rule[:depends_on] == input
-        find_item_by_id(rule[:item_id]).pick_up_dependency_met = true
-      end
-    # find the item in the pick_up_rules which has a dependency
-    find_item_by_id(input)
-    # when we use an item it might need to change the pick_up_dependency
-    end
-end
-
+# .......... GENERATES THE ITEMS IN EACH CELL
 
     @cell_items = {
       9 => [1, 2, 3, 4, 8, 14],
@@ -384,18 +406,24 @@ end
       12 => [2, 6, 7, 14, 15, 16, 17]
     }
 
+# .......... STARTING GAME SETTING
+
     @inventory = []
     @game_complete = false
     @current_room_id = 9
     @starting_game_text = true
     @current_cell_items = @cell1_items
+
+# .......... SET DEBUG TO TRUE IF CODE BUILDING/DEBUGGING
+
     @debug = true
 
   end
 
-  # Starting game
+# ...... STARTING THE GAME 
 
   def play
+
     while @game_complete == false
 
       # starting game text to help the player create a mental picture of the environment
