@@ -339,6 +339,8 @@ class Game
 
   end
 
+# ............ RESET GAME AND GAME COMPLETE CODE
+
   def reset_game
     @current_room_id = 9
     find_room_by_id(9).isLocked = true
@@ -348,8 +350,6 @@ class Game
     game_complete_text
     @game_complete = true
   end
-
-
 
 # ...... GAME INITIALIZING
 
