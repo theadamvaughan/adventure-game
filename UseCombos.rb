@@ -12,16 +12,36 @@ class Room
 end
 
 class Item
-  attr_accessor(:name, :description, :item_id, :canBePickedUp, :isPickedUp)
+  attr_accessor(:name, :description, :item_id, :canBePickedUp, :isPickedUp, :pick_up_dependency_met)
 
-  def initialize(name, description, item_id, canBePickedUp)
+  def initialize(name, description, item_id, canBePickedUp, pick_up_dependency_met = true)
     @name = name
     @description = description
     @item_id = item_id
     @canBePickedUp = canBePickedUp
     @isPickedUp = false
+    @pick_up_dependency_met = pick_up_dependency_met
   end
+
 end
+
+# class Person < Item
+  
+#   def initialize(name, description, item_id, canBePickedUp)
+#     @is_conscious = true
+#     super(name, description, item_id, canBePickedUp)
+#   end
+
+# end
+
+# class Animal < Item
+
+#   def initialize(name, description, item_id, canBePickedUp)
+#     @is_wary = true
+#     super(name, description, item_id, canBePickedUp)
+#   end
+
+# end
 
 
 class Game
@@ -44,11 +64,16 @@ class Game
   end
 
   def starting_game_text
-    slow_type("You wake up in a prison cell. You have no idea how you got there.")
-    slow_type("#{find_room_by_id(@current_room_id).description}")
-    slow_type("There's two other cells, one opposite yours, and one next to you.")
-    slow_type("They are at the end of a prison hallway. At the other end is the exit.")
-    slow_type("There's a guard blocking the exit. He's sitting next to a desk and is asleep.")
+    slow_type("\nAs you slowly start to regain consciousness, you feel the coldness of the floor, and the damp in the air.") 
+    slow_type("As your eyes slowly open and focus on your surroundings, you notice that you are in a prison cell.")
+    slow_type("The cell has bars at the front. The sides and the back of the cell are made of metal.")
+    slow_type("You're in the corner cell of a cell block. You have no idea how you got there.")
+    slow_type("You look around your cell. #{find_room_by_id(@current_room_id).description}")
+    slow_type("In the corner you notice a small mouse sat outside a small hole in the wall.")
+    slow_type("Looking through the cell bars you notice there's two other cells. One is directly opposite yours, and one is next to yours.")
+    slow_type("The cells are at the end of a prison hallway. At the other end is the exit.")
+    slow_type("There's a guard at the end of the prison hallway blocking the exit. He's sitting next to a desk and is asleep.")
+    slow_type("You need to find out how you got there but first, you must find a way out of the prison cell block.")
   end
 
   def player_move
@@ -91,35 +116,36 @@ class Game
     @rooms.each do |room|
       return room if room.id == id
     end
-
+    return nil
   end
 
 
-def look_at
-  pause(0.5)
-  slow_type("\nWhat would you like to look at?\n\n")
+  def look_at
+    pause(0.5)
+    slow_type("\nWhat would you like to look at?\n\n")
 
-  puts "[I] Inventory item"
-  puts "[R] Whats in the room"
+    puts "[I] Inventory item"
+    puts "[R] Whats in the room"
 
-  input = gets.chomp
-  pause(0.5)
+    input = gets.chomp
+    pause(0.5)
 
-  if input.downcase == "i"
-    look_at_inventory
+    if input.downcase == "i"
+      look_at_inventory
 
-  elsif input.downcase == "r"
-    print_out_room_items
+    elsif input.downcase == "r"
+      slow_type("Here's what's in #{find_room_by_id(@current_room_id).name}:\n")
+      print_out_room_items
 
-  elsif input.downcase == "q"
-    @game_complete = true
-  
-  else 
-    slow_type("\nI don't know that command")
-    look_at
+    elsif input.downcase == "q"
+      @game_complete = true
+    
+    else 
+      slow_type("\nI don't know that command")
+      look_at
+    end
+
   end
-
-end
 
 # ......FINDING ITEMS AND PRINTING OUT CELL ITEMS
 
@@ -128,7 +154,7 @@ end
     @items.each do |item|
       return item if item.item_id == id
     end
-
+    return nil
   end
 
 # ........THIS CODE PRINTS OUT THE ITEMS IN THE ROOM 
@@ -148,41 +174,60 @@ end
 
 # ....... CODE ADDS ITEMS INTO YOUR INVENTORY
 
-def put_item_in_inventory(input)
+  def put_item_in_inventory(input)
 
-  if find_item_by_id(input).canBePickedUp
-    unless @inventory.include?(input)
-      @inventory << input
-      puts "You have picked up the #{find_item_by_id(input).name}"
+    if find_item_by_id(input).canBePickedUp
+      unless @inventory.include?(input)
+        @inventory << input
+        slow_type("You have picked up the #{find_item_by_id(input).name}")
+      end
+
+    else
+      slow_type("You cannot pick up this item")
     end
 
-  else
-    slow_type("You cannot pick up this item")
   end
-
-end
 
 # ......THE CODE THAT MAKES YOU PICK THINGS UP
 
-def pick_up
+  def pick_up
 
-  slow_type("Here's what's in the room")
+    slow_type("\nHere's what's in #{find_room_by_id(@current_room_id).name}:\n\n")
 
-  current_cell_items.each do |item_id|
-    item = find_item_by_id(item_id)
-    puts "[#{item.item_id}] #{item.name}" unless @inventory.include?(item.item_id)
+    current_cell_items.each do |item_id|
+      item = find_item_by_id(item_id)
+      puts "[#{item.item_id}] #{item.name}" unless @inventory.include?(item.item_id)
+    end
+
+    slow_type("\nWhat would you like to pick up?\n")
+    input = gets.chomp.to_i
+
+    # RUN PICK UP RULES TO CHECK IF WE CAN PICK IT UP
+
+    if @inventory.include?(input)
+      slow_type("\nI don't know that command")
+    
+    elsif current_cell_items.include?(input) && !@inventory.include?(input)
+      pick_up_checks(input)
+
+    elsif current_cell_items.include?(input) && !@inventory.include?(input)
+      put_item_in_inventory(input)
+    else
+      slow_type("\nI don't know that command")
+    end
   end
 
-  slow_type("What would you like to pick up?")
-  input = gets.chomp.to_i
+  def pick_up_checks(input)
+      
+      item = find_item_by_id(input).pick_up_dependency_met
+      if item == false
+        @pick_up_rules.each do |rule|
+          puts rule[:message] if rule[:item_id] == input
+          end
+      end
 
-  if current_cell_items.include?(input) && !@inventory.include?(input)
-    put_item_in_inventory(input)
-
-  else
-    slow_type("I don't know that command")
+      # check if it is a reset game boolean
   end
-end
 
 # ......EVERYTHING BELOW IS INVENTORY RELATED
 
@@ -230,10 +275,15 @@ end
         
         if combo.nil?
           slow_type("You cannot use these two items together") 
-
+          
         else 
+          use_item_dependency(item_id)
           slow_type(combo[:message])
-          find_room_by_id(combo[:cell_to_unlock]).isLocked = false
+
+          if combo[:cell_to_unlock]
+            find_room_by_id(combo[:cell_to_unlock]).isLocked = false
+          end
+
         end
         # need it to perform the action
         # change the state of the target item if necessary
@@ -257,24 +307,24 @@ end
   def initialize
 
     @items = [
-      Item.new("Mouse", "A cute tiny mouse. Who could be afraid of this?", 1, true),
+      Item.new("Mouse", "A cute tiny mouse. Who could be afraid of this?", 1, true, false),
       Item.new("Desk", "A metal desk. Flat metal top and 4 metal legs.", 2, false),
       Item.new("Chair", "A metal chair with 4 legs", 3, false),
       Item.new("Bed", "A metal bed with a thin pillow and a tatty waffer thin blanket", 4, false),
       Item.new("Cheese Sandwich", "A mouldy cheese sandwich. No human would want to eat this", 5, true),
       Item.new("Prison Guard", "He's a large man, clearly been eating too many pies", 6, false),
-      Item.new("Prison Keys", "A bunch of keys that open all the cells and the cell room main door", 7, true),
+      Item.new("Prison Keys", "A bunch of keys that open all the cells and the cell room main door", 7, true, false),
       Item.new("Bobby Pin", "Good for holding back hair and picking locks", 8, true),
       Item.new("Your Cell Door", "Made of steel and looks pretty sturdy", 14, false),
       Item.new("Cell 2 Door", "Made of steel and looks pretty sturdy", 15, false),
       Item.new("Cell 3 Door", "Made of steel and looks pretty sturdy", 16, false),
-      Item.new("Door to the Outside World", "Huge metal door with a small window", 17, false)
+      Item.new("Door to the Outside World", "Huge metal door with a small window", 17, false),
     ].freeze
 
   #  generating the rooms
 
     @rooms = [
-      Room.new("Your Cell", "It's a dirty room with no windows. It contains a bed, chair and desk. There's a mouse in the corner of the room.", 9, true), 
+      Room.new("Your Cell", "It's a dirty room with no windows. It contains a metal bed, chair and desk.", 9, true), 
       Room.new("Cell 2", "It's the prison cell next to yours. It's the same as yours but there's a female prison inside.", 10, true),
       Room.new("Cell 3", "It's the prison cell opposite yours. It open with nothing in it except a bed, chair and desk. On the desk appears to be a sandwich", 11, false),
       Room.new("The Prison Cell Holding Area", "At one end of the Prison Hallway is your cell and two others. At the other end sits a prison guard. The prison guard is asleep.", 12, false),
@@ -283,11 +333,49 @@ end
 
     @use_combos = [
       { item_id: 8, target_id: 14, usage_location: 9, message: "You have used the bobby pin to unlock your cell. You gently open the door so you do not wake up the guard.", cell_to_unlock: 9},
-      { item_id: 5, target_id: 1, usage_location: 9, message: "You have used the cheese sandwich to tempt the mouse over to you. As he is nibbling on the cheese you pick him up." },
+      { item_id: 5, target_id: 1, usage_location: 9, message: "You have used the cheese sandwich to tempt the mouse over to you. He seems fairly calm eating the cheese." },
       { item_id: 1, target_id: 6, usage_location: 12, message: "You take the mouse out of your pocket and it runs towards the guard. The guard screams and runs directly into the wall, knocking himself out"},
       { item_id: 7, target_id: 15, usage_location: 12, message: "You use the prison keys to open the cell 2 to release the female prisoner", cell_to_unlock: 10 },
       { item_id: 7, target_id: 13, usage_location: 12, message: "You use the prison keys to open the main prison hallway door. you escape to wherever", cell_to_unlock: 11 }
     ]
+
+    @pick_up_rules = [
+      { item_id: 1, depends_on: 5, message: "The mouse gets scared and runs into the hole in the wall. You'll need to find a way to tempt him out" },
+      { item_id: 7, depends_on: 1, message: "When you reach over to pick up the Prison Keys you wake up the guard. The guard grabs you and puts you back in Your Cell before heading back to his chair and falling asleep", reset_game: true }
+    ]
+
+
+  def pick_up_checks(input)
+      
+      if find_item_by_id(input).pick_up_dependency_met
+        put_item_in_inventory(input)
+      else
+        @pick_up_rules.each do |rule|
+          slow_type("#{rule[:message]}") if rule[:item_id] == input
+          reset_game if rule[:reset_game]
+        end
+      end
+  end
+
+
+def reset_game
+  puts "reset the game"
+  # TO DO
+end
+
+# new use item update dependencies method check
+def use_item_dependency(input)
+    # whenever we use an item, we run through the pick_up_rules
+    @pick_up_rules.each do |rule|
+      if rule[:depends_on] == input
+        find_item_by_id(rule[:item_id]).pick_up_dependency_met = true
+      end
+    # find the item in the pick_up_rules which has a dependency
+    find_item_by_id(input)
+    # when we use an item it might need to change the pick_up_dependency
+    end
+end
+
 
     @cell_items = {
       9 => [1, 2, 3, 4, 8, 14],
@@ -314,8 +402,8 @@ end
       
       puts starting_game_text unless @debug == true || @starting_game_text == false
       @starting_game_text = false
-
-      slow_type("You are in #{find_room_by_id(@current_room_id).name}")
+      
+      slow_type("\nYou are in #{find_room_by_id(@current_room_id).name}")
       slow_type("What would you like to do?\n")
 
       # print out players command options
