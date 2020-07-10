@@ -96,11 +96,16 @@ class Game
 # .................. ADDITIONAL TEXT
 
   def additional_text
-
+    if @current_room_id == 11 && !@inventory.include?(5)
+      slow_type("On the desk appears to be a sandwich.")
+    elsif @current_room_id == 12 && (find_item_by_id(7).pick_up_dependency_met == false)
+      slow_type("At the other end sits a prison guard. The prison guard is asleep.")
+    elsif @current_room_id == 12 && (find_item_by_id(7).pick_up_dependency_met == true)
+      slow_type("Near the exit the Prison Guard is unconscious on the floor.")
+    else
+      return nil
+    end
   end
-
-
-
 
 # ................ CONTROLS HOW AND IF THE PLAYER CAN MOVE
 
@@ -112,6 +117,8 @@ class Game
       @options << room.id
       puts "[#{room.id}] #{room.name}" unless room.id == @current_room_id
     end
+
+    print "\nMove to: "
 
     input = gets.chomp.to_i
     pause(0.5)
@@ -127,7 +134,7 @@ class Game
         @current_room_id = input
         slow_type("\nYou have moved to #{find_room_by_id(@current_room_id).name}")
         slow_type("#{find_room_by_id(@current_room_id).description}")
-
+        additional_text
     elsif input.to_s.downcase == "q"
       @game_complete = true
 
@@ -149,11 +156,13 @@ class Game
 
 
   def look_at
-    pause(0.5)
-    slow_type("\nWhat would you like to look at?\n\n")
+    pause(0.25)
+    slow_type("\nWhat would you like to look at?\n")
 
     puts "[I] Inventory item"
     puts "[R] Whats in the room"
+
+    print "\nInput: "
 
     input = gets.chomp
     pause(0.5)
@@ -162,7 +171,7 @@ class Game
       look_at_inventory
 
     elsif input.downcase == "r"
-      slow_type("Here's what's in #{find_room_by_id(@current_room_id).name}:\n")
+      slow_type("\nHere's what's in #{find_room_by_id(@current_room_id).name}:\n")
       print_out_room_items
 
     elsif input.downcase == "q"
@@ -207,7 +216,7 @@ class Game
     if find_item_by_id(input).canBePickedUp
       unless @inventory.include?(input)
         @inventory << input
-        slow_type("You have picked up the #{find_item_by_id(input).name}")
+        slow_type("\nYou have picked up the #{find_item_by_id(input).name}.")
       end
 
     else
@@ -220,7 +229,7 @@ class Game
 
   def pick_up
 
-    slow_type("\nHere's what's in #{find_room_by_id(@current_room_id).name}:\n\n")
+    slow_type("\nHere's what's in #{find_room_by_id(@current_room_id).name}:\n")
 
     current_cell_items.each do |item_id|
       item = find_item_by_id(item_id)
@@ -228,12 +237,13 @@ class Game
     end
 
     slow_type("\nWhat would you like to pick up?\n")
+    print "Pick up: "
     input = gets.chomp.to_i
 
     # RUN PICK UP RULES TO CHECK IF WE CAN PICK IT UP
 
     if @inventory.include?(input)
-      slow_type("\nI don't know that command")
+      slow_type("\nI don't know that command.")
     
     elsif current_cell_items.include?(input) && !@inventory.include?(input)
       pick_up_checks(input)
@@ -241,7 +251,7 @@ class Game
     elsif current_cell_items.include?(input) && !@inventory.include?(input)
       put_item_in_inventory(input)
     else
-      slow_type("\nI don't know that command")
+      slow_type("\nI don't know that command.")
     end
   end
 
@@ -289,24 +299,29 @@ class Game
   def use_item
 
     if @inventory.empty?
-      slow_type("You don't have anything in your inventory")
+      slow_type("\nYou don't have anything in your inventory")
 
     else
       print_inventory_items
 
-      slow_type("what would you like to use?")
+      slow_type("\nWhat would you like to use?")
+      print "\nUse item: "
       item_id = gets.chomp.to_i
+      selected_item = find_item_by_id(item_id)
 
       if @inventory.include?(item_id)
-        slow_type("What would you like to use the item on?")
+        slow_type("\nWhat would you like to use the #{selected_item.name} on?\n")
 
         print_out_room_items
+
+        print "\nUse #{selected_item.name} on: "
+
         target_item = gets.chomp.to_i
 
         combo = @use_combos.find { |combo| combo[:item_id] == item_id && combo[:usage_location] == @current_room_id && combo[:target_id] == target_item}
         
         if combo.nil?
-          slow_type("You cannot use these two items together") 
+          slow_type("\nYou cannot use these two items together") 
           
         else 
           use_item_dependency(item_id)
@@ -322,7 +337,7 @@ class Game
         # change the state of the target item if necessary
         # remove item from inventory (sometimes)
       else
-        slow_type("you cannot use that item")
+        slow_type("\nyou cannot use that item")
       end
     end
   end
@@ -382,28 +397,28 @@ class Game
 # ....... GENERATING ROOMS
 
     @rooms = [
-      Room.new("Your Cell", "It's a dirty room with no windows. It contains a metal bed, chair and desk.", 9, true), 
-      Room.new("Cell 2", "It's the prison cell next to yours. It's the same as yours but there's a female prison inside.", 10, true),
-      Room.new("Cell 3", "It's the prison cell opposite yours. It open with nothing in it except a bed, chair and desk. On the desk appears to be a sandwich", 11, false),
-      Room.new("The Prison Cell Holding Area", "At one end of the Prison Hallway is your cell and two others. At the other end sits a prison guard. The prison guard is asleep.", 12, false),
+      Room.new("Your Cell", "It's a dirty room with no windows. It contains a metal Bed, Chair and Desk.", 9, true), 
+      Room.new("Cell 2", "It's the prison cell next to yours. It's the same as yours but there's a female prisoner inside.", 10, true),
+      Room.new("Cell 3", "It's the prison cell opposite yours. It open with nothing in it except a bed, chair and desk.", 11, false),
+      Room.new("The Prison Cell Holding Area", "At one end of the Prison Hallway is your cell and two others.", 12, false),
       Room.new("The Outside World", "You'll need to find a way to get here", 13, true)
     ]
 
 # ......... CODE THAT DETERMINES WHAT ITEMS CAN BE USED TOGETHER
 
     @use_combos = [
-      { item_id: 8, target_id: 14, usage_location: 9, message: "You have used the bobby pin to unlock your cell. You gently open the door so you do not wake up the guard.", cell_to_unlock: 9},
-      { item_id: 5, target_id: 1, usage_location: 9, message: "You have used the cheese sandwich to tempt the mouse over to you. He seems fairly calm eating the cheese." },
-      { item_id: 1, target_id: 6, usage_location: 12, message: "You take the mouse out of your pocket and it runs towards the guard. The guard screams and runs directly into the wall, knocking himself out"},
-      { item_id: 7, target_id: 15, usage_location: 12, message: "You use the prison keys to open the cell 2 to release the female prisoner", cell_to_unlock: 10 },
-      { item_id: 7, target_id: 17, usage_location: 12, message: "You use the prison keys to open the main prison hallway door. You escape to level 2...", cell_to_unlock: 13, game_complete: true }
+      { item_id: 8, target_id: 14, usage_location: 9, message: "\nYou have used the Bobby Pin to unlock your Cell. You gently open the door so you do not wake up the guard.", cell_to_unlock: 9},
+      { item_id: 5, target_id: 1, usage_location: 9, message: "\nYou have used the Cheese Sandwich to tempt the Mouse over to you. He seems fairly calm eating the cheese." },
+      { item_id: 1, target_id: 6, usage_location: 12, message: "\nYou take the Mouse out of your pocket and it runs towards the guard. The guard screams and runs directly into the wall, knocking himself out"},
+      { item_id: 7, target_id: 15, usage_location: 12, message: "\nYou use the Prison Keys to open the cell 2 to release the Female Prisoner", cell_to_unlock: 10 },
+      { item_id: 7, target_id: 17, usage_location: 12, message: "\nYou use the Prison Keys to open the main Prison Hallway door. You escape to level 2...", cell_to_unlock: 13, game_complete: true }
     ]
 
 # .......... CODE FOR WHEN PICK UP DEPENDENCIES HAVEN'T BEEN MET
 
     @pick_up_rules = [
-      { item_id: 1, depends_on: 5, message: "The mouse gets scared and runs into the hole in the wall. You'll need to find a way to tempt him out" },
-      { item_id: 7, depends_on: 1, message: "When you reach over to pick up the Prison Keys you wake up the guard. The guard grabs you and puts you back in Your Cell before heading back to his chair and falling asleep", reset_game: true }
+      { item_id: 1, depends_on: 5, message: "\nThe Mouse gets scared and runs into a hole in the wall. You'll need to find a way to tempt him out." },
+      { item_id: 7, depends_on: 1, message: "\nWhen you reach over to pick up the Prison Keys you wake up the guard. \nThe Guard grabs you and puts you back in Your Cell before heading back to his chair and falling asleep.", reset_game: true }
     ]
 
 # .......... GENERATES THE ITEMS IN EACH CELL
@@ -451,7 +466,7 @@ class Game
       puts "[P] Pick up"
 
       # gets user input
-
+      print "\nInput: "
       input = gets.chomp
         
         if input.downcase == "m"
