@@ -25,6 +25,8 @@ class Item
 
 end
 
+# MIGHT USE THESE CLASSES LATER ON
+
 # class Person < Item
   
 #   def initialize(name, description, item_id, canBePickedUp)
@@ -89,6 +91,15 @@ class Game
     pause(0.5)
     slow_type("Stayed tuned for more levels")
   end
+
+
+# .................. ADDITIONAL TEXT
+
+  def additional_text
+
+  end
+
+
 
 
 # ................ CONTROLS HOW AND IF THE PLAYER CAN MOVE
@@ -244,7 +255,7 @@ class Game
     else
       @pick_up_rules.each do |rule|
         slow_type("#{rule[:message]}") if rule[:item_id] == input
-        reset_game if rule[:reset_game]
+        reset_game if input == 7 
       end
     end
 
@@ -322,8 +333,6 @@ class Game
       if rule[:depends_on] == input
         find_item_by_id(rule[:item_id]).pick_up_dependency_met = true
       end
-    
-      @use_item
     
     find_item_by_id(input)
     # when we use an item it might need to change the pick_up_dependency
@@ -416,7 +425,7 @@ class Game
 
 # .......... SET DEBUG TO TRUE IF CODE BUILDING/DEBUGGING
 
-    @debug = true
+    @debug = false
 
   end
 
