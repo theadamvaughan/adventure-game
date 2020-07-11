@@ -28,14 +28,13 @@ end
 
 # MIGHT USE THESE CLASSES LATER ON
 
-# class Person < Item
+class Person < Item
   
-#   def initialize(name, description, item_id, canBePickedUp)
-#     @is_conscious = true
-#     super(name, description, item_id, canBePickedUp)
-#   end
+  def initialize(name, description, item_id, canBePickedUp)
+    super(name, description, item_id, canBePickedUp)
+  end
 
-# end
+end
 
 # class Animal < Item
 
@@ -215,7 +214,7 @@ class Game
 
     current_cell_items.each do |item_id|
       item = find_item_by_id(item_id)
-      puts "[#{item.item_id}] #{item.name}" unless @inventory.include?(item.item_id) || item.show_item == false
+      puts "[#{item.item_id}] #{item.name}" unless @inventory.include?(item.item_id) || item.show_item == false || item.class == Person
     end
 
     slow_type("\nWhat would you like to pick up?\n")
@@ -379,6 +378,25 @@ class Game
 
 # ............ DISCUSSION WITH LIBERTY
 
+  def talk_to
+    unless !current_cell_items.include?(18)
+      slow_type("Here are the people near you:")
+      @items.each do |is_person|
+        puts "[#{is_person.item_id}] #{is_person.name}" if is_person.class == Person && current_cell_items.include?(is_person.item_id)
+      end
+      slow_type("Who do you want to talk to?")
+      input = gets.chomp.to_i
+      if input == 18
+        liberty_discussion
+      else
+        slow_type("I don't know that command")
+      end
+    else
+      slow_type("There's no-one here for you to speak to.")
+    end
+  end
+
+
   def liberty_discussion
     
     if @liberty_discussion_is_complete == false
@@ -405,6 +423,13 @@ class Game
         end
       end
       # reset_game sets the dialogue tree to 18 so you can ask for another bobby pin
+
+    elsif find_room_by_id(10).isLocked == false
+      @talk_id = 21
+
+      message = @liberty_conversation.find { |message| message[:talk_id] == @talk_id }
+      print "#{message[:character]}: "
+      slow_type("#{message[:message]}")
 
     elsif @talk_id == 18
 
@@ -462,6 +487,7 @@ class Game
       Item.new("Cell 2 Door", "Made of steel and looks pretty sturdy", 15, false),
       Item.new("Cell 3 Door", "Made of steel and looks pretty sturdy", 16, false),
       Item.new("Door to the Outside World", "Huge metal door with a small window", 17, false),
+      Person.new("Liberty", "Female prisoner from the cell next to you", 18, false)
     ].freeze
 
 # ....... GENERATING ROOMS
@@ -480,7 +506,7 @@ class Game
       { item_id: 8, target_id: 14, usage_location: 9, message: "\nYou have used the Bobby Pin to unlock your Cell. You gently open the door so you do not wake up the guard.", cell_to_unlock: 9},
       { item_id: 5, target_id: 1, usage_location: 9, message: "\nYou have used the Cheese Sandwich to tempt the Mouse over to you. He seems fairly calm eating the cheese." },
       { item_id: 1, target_id: 6, usage_location: 12, message: "\nYou take the Mouse out of your pocket and it runs towards the guard. The guard screams and runs directly into the wall, knocking himself out"},
-      { item_id: 7, target_id: 15, usage_location: 12, message: "\nYou use the Prison Keys to open the cell 2 and release Liberty", cell_to_unlock: 10 },
+      { item_id: 7, target_id: 15, usage_location: 12, message: "\nYou use the Prison Keys to open the cell 2 and set Liberty free", cell_to_unlock: 10 },
       { item_id: 7, target_id: 17, usage_location: 12, message: "\nYou use the Prison Keys to open the main Prison Hallway door. You escape to level 2...", cell_to_unlock: 13, game_complete: true }
     ]
 
@@ -495,8 +521,8 @@ class Game
 
     @liberty_conversation = [
 
-      { talk_id: 1, next_talk_id: 2, character: "Player 1", message: "Hi, my name is Player 1, what's your name?\n" },
-      { talk_id: 2, next_talk_id: 3, character: "Liberty", message: "My name is Liberty. What brings you here?\n" },
+      { talk_id: 1, next_talk_id: 2, character: "Player 1", message: "Hey! Lady in the cell next to me! What's going on?\n" },
+      { talk_id: 2, next_talk_id: 3, character: "Liberty", message: "Hey there! I was wondering when you were going to wake up! My name is Liberty. What brings you here?\n" },
       { talk_id: 3, next_talk_id: 5, character: "Player 1", message: "I don't know, I'm not sure how I got here. Where are we?\n" },
       { talk_id: 4, next_talk_id: 7, character: "Player 1", message: "Fuck knows, all I know is that I have a pounding headache. Any idea how I got here?\n" },
       { talk_id: 5, next_talk_id: 6, character: "Liberty", message: "You're onboard the Spaceship Caerus. It’s a holding vessel for the Ahrimanian Empire.\n" },
@@ -504,7 +530,7 @@ class Game
       { talk_id: 7, next_talk_id: 9, character: "Liberty", message: "No idea what you have been bought in here for. Although I did hear one of the guards mutter something about finding your spaceship floating in space.\n" },
       { talk_id: 8, next_talk_id: 5, character: "Player 1", message: "So what is this place?\n" },
       { talk_id: 9, next_talk_id: 10, character: "Player 1", message: "Perfect. So what did you do to end up here?\n" },
-      { talk_id: 10, next_talk_id: 11, character: "Liberty", message: "Got caught salvaging parts from an abandoned space outpost. It was out of their jurisdiction but they decided to pick me up anyway.\n" },
+      { talk_id: 10, next_talk_id: 11, character: "Liberty", message: "I got caught salvaging parts from an abandoned space outpost. It was out of their jurisdiction but they decided to pick me up anyway.\n" },
       { talk_id: 11, next_talk_id: 12, character: "Player 1", message: "Looks like we're doomed. Anything I can hang myself with?\n" },
       { talk_id: 12, next_talk_id: 13, character: "Liberty", message: "You could try and use my shoelaces, but I don't think that's a good idea.\n" },
       { talk_id: 13, next_talk_id: 14, character: "Player 1", message: "Know of a way to get out?\n" },
@@ -514,18 +540,18 @@ class Game
       { talk_id: 17, next_talk_id: 19, character: "Player 1", message: "Yeah, that could work. Chuck one into my cell.\n" },
       { talk_id: 18, next_talk_id: 19, character: "Player 1", message: "Hey, Liberty, any chance of another Bobby Pin?\n" },
       { talk_id: 19, next_talk_id: 20, character: "Liberty", message: "Sure, here you go\n" },
-      { talk_id: 20, next_talk_id: 20, character: "Liberty", message: "Hurry up and bust us out of here already!\n" }
-
+      { talk_id: 20, next_talk_id: 20, character: "Liberty", message: "Hurry up and bust us out of here already!\n" },
+      { talk_id: 21, next_talk_id: 21, character: "Liberty", message: "Thanks for setting me free! I owe you one!\n" }
     ]
 
 
 # .......... GENERATES THE ITEMS IN EACH CELL
 
     @cell_items = {
-      9 => [1, 2, 3, 4, 8, 14],
-      10 => [2, 3, 4, 15],
+      9 => [1, 2, 3, 4, 8, 14, 18],
+      10 => [2, 3, 4, 15, 18],
       11 => [2, 3, 4, 5, 16],
-      12 => [2, 6, 7, 14, 15, 16, 17]
+      12 => [2, 6, 7, 14, 15, 16, 17, 18]
     }
 
 # .......... STARTING GAME SETTING
@@ -539,7 +565,7 @@ class Game
 
 # .......... SET DEBUG TO TRUE IF CODE BUILDING/DEBUGGING
 
-    @debug = true
+    @debug = false
 
   end
 
@@ -582,7 +608,7 @@ class Game
           use_item
 
         elsif input.downcase == "t"
-          liberty_discussion
+          talk_to
         
         elsif input.downcase == "q"
           @game_complete = true
