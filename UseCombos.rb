@@ -70,14 +70,14 @@ class Game
 
 # ................. TEXT AT THE START OF THE GAME
 
+
   def player_set_up
 
     if @debug == false
       slow_type("Please enter your name and hit enter:")
-      @player_name = gets.chomp!
-      slow_type("\nThank you, #{@player_name}")
+      @new_player_name = gets.chomp
+      slow_type("\nThank you, #{@new_player_name}")
       slow_type("\nTime to start the game...\n")
-
     end
     
   end
@@ -445,11 +445,6 @@ class Game
     @game_complete = true
   end
 
-  def player
-    output = "Mr Developer"
-    return output
-  end
-
 # ...... GAME INITIALIZING
 
   def initialize
@@ -500,24 +495,24 @@ class Game
 
     @liberty_conversation = [
 
-      { talk_id: 1, next_talk_id: 2, character: player, message: "Hi, my name is #{player}, what's your name?\n" },
+      { talk_id: 1, next_talk_id: 2, character: "Player 1", message: "Hi, my name is Player 1, what's your name?\n" },
       { talk_id: 2, next_talk_id: 3, character: "Liberty", message: "My name is Liberty. What brings you here?\n" },
-      { talk_id: 3, next_talk_id: 5, character: player, message: "I don't know, I'm not sure how I got here. Where are we?\n" },
-      { talk_id: 4, next_talk_id: 7, character: player, message: "Fuck knows, all I know is that I have a pounding headache. Any idea how I got here?\n" },
+      { talk_id: 3, next_talk_id: 5, character: "Player 1", message: "I don't know, I'm not sure how I got here. Where are we?\n" },
+      { talk_id: 4, next_talk_id: 7, character: "Player 1", message: "Fuck knows, all I know is that I have a pounding headache. Any idea how I got here?\n" },
       { talk_id: 5, next_talk_id: 6, character: "Liberty", message: "You're onboard the Spaceship Caerus. It’s a holding vessel for the Ahrimanian Empire.\n" },
-      { talk_id: 6, next_talk_id: 7, character: player, message: "Great. Any idea how or why I got here?\n" },
+      { talk_id: 6, next_talk_id: 7, character: "Player 1", message: "Great. Any idea how or why I got here?\n" },
       { talk_id: 7, next_talk_id: 9, character: "Liberty", message: "No idea what you have been bought in here for. Although I did hear one of the guards mutter something about finding your spaceship floating in space.\n" },
-      { talk_id: 8, next_talk_id: 5, character: player, message: "So what is this place?\n" },
-      { talk_id: 9, next_talk_id: 10, character: player, message: "Perfect. So what did you do to end up here?\n" },
+      { talk_id: 8, next_talk_id: 5, character: "Player 1", message: "So what is this place?\n" },
+      { talk_id: 9, next_talk_id: 10, character: "Player 1", message: "Perfect. So what did you do to end up here?\n" },
       { talk_id: 10, next_talk_id: 11, character: "Liberty", message: "Got caught salvaging parts from an abandoned space outpost. It was out of their jurisdiction but they decided to pick me up anyway.\n" },
-      { talk_id: 11, next_talk_id: 12, character: player, message: "Looks like we're doomed. Anything I can hang myself with?\n" },
+      { talk_id: 11, next_talk_id: 12, character: "Player 1", message: "Looks like we're doomed. Anything I can hang myself with?\n" },
       { talk_id: 12, next_talk_id: 13, character: "Liberty", message: "You could try and use my shoelaces, but I don't think that's a good idea.\n" },
-      { talk_id: 13, next_talk_id: 14, character: player, message: "Know of a way to get out?\n" },
+      { talk_id: 13, next_talk_id: 14, character: "Player 1", message: "Know of a way to get out?\n" },
       { talk_id: 14, next_talk_id: 15, character: "Liberty", message: "The place looks well sealed to me. If you can find a way of getting the keys off the guards desk you can bust us out.\n" },
-      { talk_id: 15, next_talk_id: 16, character: player, message: "Looks too far away and there's no way of reaching it. If you have something small and thin, I could try and pick the lock on my cell door.\n" },
+      { talk_id: 15, next_talk_id: 16, character: "Player 1", message: "Looks too far away and there's no way of reaching it. If you have something small and thin, I could try and pick the lock on my cell door.\n" },
       { talk_id: 16, next_talk_id: 17, character: "Liberty", message: "My hair is held back with bobby pins, would one of those do?\n" },
-      { talk_id: 17, next_talk_id: 19, character: player, message: "Yeah, that could work. Chuck one into my cell.\n" },
-      { talk_id: 18, next_talk_id: 19, character: player, message: "Hey, Liberty, any chance of another Bobby Pin?\n" },
+      { talk_id: 17, next_talk_id: 19, character: "Player 1", message: "Yeah, that could work. Chuck one into my cell.\n" },
+      { talk_id: 18, next_talk_id: 19, character: "Player 1", message: "Hey, Liberty, any chance of another Bobby Pin?\n" },
       { talk_id: 19, next_talk_id: 20, character: "Liberty", message: "Sure, here you go\n" },
       { talk_id: 20, next_talk_id: 20, character: "Liberty", message: "Hurry up and bust us out of here already!\n" }
 
@@ -540,7 +535,6 @@ class Game
     @current_room_id = 9
     @starting_game_text = true
     @current_cell_items = @cell1_items
-    @player_name = ""
     @liberty_discussion_is_complete = false
 
 # .......... SET DEBUG TO TRUE IF CODE BUILDING/DEBUGGING
