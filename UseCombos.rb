@@ -72,14 +72,13 @@ class Game
 
   def player_set_up
 
-      if @debug == false
-        slow_type("Please enter your name and hit enter:")
-        @player_name = gets.chomp!
-        slow_type("\nThank you, #{@player_name}")
-        slow_type("\nTime to start the game...\n")
-      else
-        @player_name = "Mr Developer"
-      end
+    if @debug == false
+      slow_type("Please enter your name and hit enter:")
+      @player_name = gets.chomp!
+      slow_type("\nThank you, #{@player_name}")
+      slow_type("\nTime to start the game...\n")
+    end
+    
   end
 
   def starting_game_text
@@ -215,7 +214,7 @@ class Game
 
     current_cell_items.each do |item_id|
       item = find_item_by_id(item_id)
-      puts "[#{item.item_id}] #{item.name}" unless @inventory.include?(item.item_id)
+      puts "[#{item.item_id}] #{item.name}" unless @inventory.include?(item.item_id) || item.show_item == false
     end
 
     slow_type("\nWhat would you like to pick up?\n")
@@ -224,7 +223,10 @@ class Game
 
     # RUN PICK UP RULES TO CHECK IF WE CAN PICK IT UP
 
-    if @inventory.include?(input)
+    if @inventory.include?(input) || input == 0
+      slow_type("\nI don't know that command.")
+
+    elsif find_item_by_id(input).show_item == false
       slow_type("\nI don't know that command.")
     
     elsif current_cell_items.include?(input) && !@inventory.include?(input)
@@ -378,31 +380,56 @@ class Game
 
   def liberty_discussion
 
-    @talk_id
+    if @liberty_discussion_is_complete == false
+      @talk_id = 1
+
       until @liberty_discussion_is_complete == true
         message = @liberty_conversation.find { |message| message[:talk_id] == @talk_id }
         print "#{message[:character]}: "
         slow_type("#{message[:message]}")
         @talk_id = message[:next_talk_id]
+
+        # Conversation stops when it gets to the end. set conversation_complete to tru so you don't have to go through the same dialogue
+        # The bobby pin becomes viewable
+        # sets the @talk_id to 21
+
         if message[:talk_id] == 19
           @liberty_discussion_is_complete = true
-          @talk_id = 18
           find_item_by_id(8).show_item = true
+          @talk_id = 20
         end
       end
 
+      # If @talk_id is 21 
+
+    elsif @talk_id == 20
+      message = @liberty_conversation.find { |message| message[:talk_id] == @talk_id }
+      print "#{message[:character]}: "
+      slow_type("#{message[:message]}")
+
+      # reset_game sets the dialogue tree to 18 so you can ask for another bobby pin
+
+    else
+      @talk_id = 18
+      until @talk_id == 20
+        message = @liberty_conversation.find { |message| message[:talk_id] == @talk_id }
+        print "#{message[:character]}: "
+        slow_type("#{message[:message]}")
+        @talk_id = message[:next_talk_id]
+        find_item_by_id(8).show_item = true
+      end
+    end
+
   end
-
-
 
 # ............ RESET GAME AND GAME COMPLETE CODE
 
   def reset_game
     @current_room_id = 9
     find_room_by_id(9).isLocked = true
-    @liberty_discussion_is_complete = false
     find_item_by_id(8).show_item = false
     @inventory.delete(8)
+    @talk_id = 18
   end
 
   def game_complete
@@ -478,7 +505,8 @@ class Game
       { talk_id: 16, next_talk_id: 17, character: "Liberty", message: "My hair is held back with bobby pins, would one of those do?" },
       { talk_id: 17, next_talk_id: 19, character: player_set_up, message: "Yeah, that could work. Chuck one into my cell." },
       { talk_id: 18, next_talk_id: 19, character: player_set_up, message: "Hey, Liberty, any chance of another Bobby Pin?" },
-      { talk_id: 19, next_talk_id: 18, character: "Liberty", message: "Sure, here you go" }
+      { talk_id: 19, next_talk_id: 20, character: "Liberty", message: "Sure, here you go" },
+      { talk_id: 20, next_talk_id: 20, character: "Liberty", message: "Hurry up and bust us out of here already!" }
 
     ]
 
@@ -505,7 +533,7 @@ class Game
 
 # .......... SET DEBUG TO TRUE IF CODE BUILDING/DEBUGGING
 
-    @debug = false
+    @debug = true
 
   end
 
