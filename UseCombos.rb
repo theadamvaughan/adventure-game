@@ -185,7 +185,7 @@ class Game
 
     current_cell_items.each do |item_id|
       item = find_item_by_id(item_id)
-      puts "[#{item.item_id}] #{item.name} - #{item.description}" unless @inventory.include?(item.item_id) || item.show_item == false
+      puts "[#{item.item_id}] #{item.name} - #{item.description}" unless @inventory.include?(item.item_id) || item.show_item == false || item.class == Person
     end
 
   end
