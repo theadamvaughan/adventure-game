@@ -1,3 +1,5 @@
+require "tty-prompt"
+
 class Room
 
   attr_accessor(:name, :description, :id, :isLocked)
@@ -122,17 +124,18 @@ class Game
 # ................ CONTROLS HOW AND IF THE PLAYER CAN MOVE
 
   def player_move
-    @options = []
-    slow_type("\nWhere would you like to move to?\n")
 
+    move = TTY::Prompt.new
+
+    choices = []
+    @options = []
     @rooms.each do |room|
       @options << room.id
-      puts "[#{room.id}] #{room.name}" unless room.id == @current_room_id
+      choices << { name: room.name, value: room.id } unless room.id == @current_room_id
     end
 
-    print "\nMove to: "
+    input = move.select("Where would you like to move to?", choices)
 
-    input = gets.chomp.to_i
     pause(0.5)
 
     if @options.include?(input) && find_room_by_id(@current_room_id).isLocked
@@ -260,20 +263,22 @@ class Game
 
   def look_at
     pause(0.25)
-    slow_type("\nWhat would you like to look at?\n")
 
-    puts "[I] Inventory item"
-    puts "[R] Whats in the room"
+    look_at = TTY::Prompt.new
 
-    print "\nInput: "
+    choices = [
+      { name: 'Inventory Item', value: 1 },
+      { name: 'Whats in the Room', value: 2 },
+    ]
+    
+    input = look_at.select(slow_type("\nWhat would you like to look at?\n"), choices)
 
-    input = gets.chomp
     pause(0.5)
 
-    if input.downcase == "i"
+    if input == 1
       look_at_inventory
 
-    elsif input.downcase == "r"
+    elsif input == 2
       slow_type("\nHere's what's in #{find_room_by_id(@current_room_id).name}:\n")
       print_out_room_items
 
@@ -317,8 +322,9 @@ class Game
 
     else
       print_inventory_items
-
+      
       slow_type("\nWhat would you like to use?")
+      
       print "\nUse item: "
       item_id = gets.chomp.to_i
       selected_item = find_item_by_id(item_id)
@@ -580,41 +586,42 @@ class Game
       @starting_game_text = false
       
       slow_type("\nYou are in #{find_room_by_id(@current_room_id).name}")
-      slow_type("What would you like to do?\n")
-      
-      # print out players command options
+      main_menu = TTY::Prompt.new
 
-      puts "[M] Move player"
-      puts "[L] Look at"
-      puts "[U] Use item"
-      puts "[P] Pick up"
-      puts "[T] Talk"
+      choices = [
+      { name: 'Move Player', value: 1 },
+      { name: 'Look At', value: 2 },
+      { name: 'Pick Up', value: 3 },
+      { name: 'Use Item', value: 4 },
+      { name: 'Talk To', value: 5 },
+      { name: 'Quit', value: 6 },
+    ]
+      attr = main_menu.select("What would you like to do?", choices)
 
       # gets user input
-      print "\nInput: "
-      input = gets.chomp
         
-        if input.downcase == "m"
-          player_move
-
-        elsif input.downcase == "l"
-          look_at
-
-        elsif input.downcase == "p"
-          pick_up
-
-        elsif input.downcase == "u"
-          use_item
-
-        elsif input.downcase == "t"
-          talk_to
+      if attr == 1
+        player_move
         
-        elsif input.downcase == "q"
-          @game_complete = true
 
-        else
-          puts "\nI don't know that command\n"
-        end
+      elsif attr == 2
+        look_at
+
+      elsif attr == 3
+        pick_up
+
+      elsif attr == 4
+        use_item
+
+      elsif attr == 5
+        talk_to
+      
+      elsif attr == 6
+        @game_complete = true
+
+      else
+        puts "\nI don't know that command\n"
+      end
 
     end
   end
