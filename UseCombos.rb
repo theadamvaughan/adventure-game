@@ -189,7 +189,7 @@ class Game
 
     current_cell_items.each do |item_id|
       item = find_item_by_id(item_id)
-      puts "[#{item.item_id}] #{item.name} - #{item.description}" unless @inventory.include?(item.item_id) || item.show_item == false || item.class == Person
+      puts "#{item.name} - #{item.description}" unless @inventory.include?(item.item_id) || item.show_item == false || item.class == Person
     end
 
   end
@@ -218,7 +218,7 @@ class Game
 
     current_cell_items.each do |item_id|
       item = find_item_by_id(item_id)
-      puts "[#{item.item_id}] #{item.name}" unless @inventory.include?(item.item_id) || item.show_item == false || item.class == Person
+      puts "#{item.name}" unless @inventory.include?(item.item_id) || item.show_item == false || item.class == Person
     end
     
     pick_up = TTY::Prompt.new
@@ -315,7 +315,7 @@ class Game
 
     @inventory.each do |item_id|
       item = find_item_by_id(item_id)
-      puts "[#{item.item_id}] #{item.name} - #{item.description}"
+      puts "#{item.name} - #{item.description}"
     end
 
   end
@@ -352,7 +352,7 @@ class Game
 
       current_cell_items.each do |item_id|
         item = find_item_by_id(item_id)
-        puts "[#{item.item_id}] #{item.name}" unless @inventory.include?(item.item_id) || item.show_item == false || item.class == Person
+        puts "#{item.name}" unless @inventory.include?(item.item_id) || item.show_item == false || item.class == Person
       end
     
         use_on = TTY::Prompt.new
@@ -414,13 +414,18 @@ class Game
 # ............ DISCUSSION WITH LIBERTY
 
   def talk_to
+
+    talk_to = TTY::Prompt.new
+    choices = []
+
     unless !current_cell_items.include?(18)
       slow_type("Here are the people near you:\n")
       @items.each do |is_person|
-        puts "[#{is_person.item_id}] #{is_person.name}" if is_person.class == Person && current_cell_items.include?(is_person.item_id)
+        choices << { name: is_person.name, value: is_person.item_id } if is_person.class == Person && current_cell_items.include?(is_person.item_id)
       end
-      slow_type("\nWho do you want to talk to?")
-      input = gets.chomp.to_i
+    
+    input = talk_to.select(slow_type("\nWho do you want to talk to?"), choices)
+
       if input == 18
         liberty_discussion
       else
