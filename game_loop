@@ -1,3 +1,5 @@
+require "tty-prompt"
+
 class Room
 
   attr_accessor(:name, :description, :id, :isLocked)
@@ -122,17 +124,18 @@ class Game
 # ................ CONTROLS HOW AND IF THE PLAYER CAN MOVE
 
   def player_move
-    @options = []
-    slow_type("\nWhere would you like to move to?\n")
 
+    move = TTY::Prompt.new
+
+    choices = []
+    @options = []
     @rooms.each do |room|
       @options << room.id
-      puts "[#{room.id}] #{room.name}" unless room.id == @current_room_id
+      choices << { name: room.name, value: room.id } unless room.id == @current_room_id
     end
 
-    print "\nMove to: "
+    input = move.select(slow_type("Where would you like to move to?"), choices)
 
-    input = gets.chomp.to_i
     pause(0.5)
 
     if @options.include?(input) && find_room_by_id(@current_room_id).isLocked
@@ -141,16 +144,13 @@ class Game
     elsif @options.include?(input) && find_room_by_id(input.to_i).isLocked
         slow_type("You cannot get to #{find_room_by_id(input.to_i).name}. it is currently locked")
 
-    elsif @options.include?(input) && !find_room_by_id(@current_room_id).isLocked
+    else @options.include?(input) && !find_room_by_id(@current_room_id).isLocked
 
         @current_room_id = input
         slow_type("\nYou have moved to #{find_room_by_id(@current_room_id).name}")
         slow_type("#{find_room_by_id(@current_room_id).description}")
         additional_text
-    elsif input.to_s.downcase == "q"
-      @game_complete = true
 
-    else
       slow_type("I don't know that command\n")
     end
 
@@ -186,7 +186,7 @@ class Game
 
     current_cell_items.each do |item_id|
       item = find_item_by_id(item_id)
-      puts "[#{item.item_id}] #{item.name} - #{item.description}" unless @inventory.include?(item.item_id) || item.show_item == false || item.class == Person
+      puts "#{item.name} - #{item.description}" unless @inventory.include?(item.item_id) || item.show_item == false || item.class == Person
     end
 
   end
@@ -215,28 +215,26 @@ class Game
 
     current_cell_items.each do |item_id|
       item = find_item_by_id(item_id)
-      puts "[#{item.item_id}] #{item.name}" unless @inventory.include?(item.item_id) || item.show_item == false || item.class == Person
+      puts "#{item.name}" unless @inventory.include?(item.item_id) || item.show_item == false || item.class == Person
     end
+    
+    pick_up = TTY::Prompt.new
 
-    slow_type("\nWhat would you like to pick up?\n")
-    print "Pick up: "
-    input = gets.chomp.to_i
+    choices = []
+    current_cell_items.each do |item_id|
+      item = find_item_by_id(item_id)
+      choices << { name: item.name, value: item.item_id } unless @inventory.include?(item.item_id) || item.show_item == false || item.class == Person
+    end
+    
+    input = pick_up.select(slow_type("\nWhat would you like to pick up?\n"), choices)
 
     # RUN PICK UP RULES TO CHECK IF WE CAN PICK IT UP
 
-    if @inventory.include?(input) || input == 0
-      slow_type("\nI don't know that command.")
-
-    elsif find_item_by_id(input).show_item == false
-      slow_type("\nI don't know that command.")
-    
-    elsif current_cell_items.include?(input) && !@inventory.include?(input)
+    if  current_cell_items.include?(input) && !@inventory.include?(input)
       pick_up_checks(input)
 
-    elsif current_cell_items.include?(input) && !@inventory.include?(input)
+    else current_cell_items.include?(input) && !@inventory.include?(input)
       put_item_in_inventory(input)
-    else
-      slow_type("\nI don't know that command.")
     end
   end
 
@@ -260,29 +258,24 @@ class Game
 
   def look_at
     pause(0.25)
-    slow_type("\nWhat would you like to look at?\n")
 
-    puts "[I] Inventory item"
-    puts "[R] Whats in the room"
+    look_at = TTY::Prompt.new
 
-    print "\nInput: "
+    choices = [
+      { name: 'Inventory Item', value: 1 },
+      { name: 'Whats in the Room', value: 2 },
+    ]
+    
+    input = look_at.select(slow_type("\nWhat would you like to look at?\n"), choices)
 
-    input = gets.chomp
     pause(0.5)
 
-    if input.downcase == "i"
+    if input == 1
       look_at_inventory
 
-    elsif input.downcase == "r"
+    else input == 2
       slow_type("\nHere's what's in #{find_room_by_id(@current_room_id).name}:\n")
       print_out_room_items
-
-    elsif input.downcase == "q"
-      @game_complete = true
-    
-    else 
-      slow_type("\nI don't know that command")
-      look_at
     end
 
   end
@@ -290,7 +283,7 @@ class Game
   def look_at_inventory
 
     if @inventory.empty?
-      puts "You don't have anything in your inventory"
+      slow_type("\nYou don't have anything in your inventory")
     else
       print_inventory_items
     end
@@ -303,7 +296,7 @@ class Game
 
     @inventory.each do |item_id|
       item = find_item_by_id(item_id)
-      puts "[#{item.item_id}] #{item.name} - #{item.description}"
+      puts "#{item.name} - #{item.description}"
     end
 
   end
@@ -318,19 +311,31 @@ class Game
     else
       print_inventory_items
 
-      slow_type("\nWhat would you like to use?")
-      print "\nUse item: "
-      item_id = gets.chomp.to_i
+      use_item = TTY::Prompt.new
+
+      choices = []
+      @options = []
+      @inventory.each do |item_id|
+      inventory_item = find_item_by_id(item_id)
+        choices << { name: inventory_item.name, value: inventory_item.item_id }
+      end
+
+      item_id = use_item.select(slow_type("\nWhat would you like to use?"), choices)
+      
       selected_item = find_item_by_id(item_id)
 
       if @inventory.include?(item_id)
-        slow_type("\nWhat would you like to use the #{selected_item.name} on?\n")
+    
+        use_on = TTY::Prompt.new
 
-        print_out_room_items
+        choices = []
+        @options = []
+        current_cell_items.each do |item_id|
+          item = find_item_by_id(item_id)
+          choices << { name: item.name, value: item.item_id } unless @inventory.include?(item.item_id) || item.show_item == false || item.class == Person
+        end
 
-        print "\nUse #{selected_item.name} on: "
-
-        target_item = gets.chomp.to_i
+        target_item = use_on.select(slow_type("\nWhat would you like to use the #{selected_item.name} on?"), choices)
 
         combo = @use_combos.find { |combo| combo[:item_id] == item_id && combo[:usage_location] == @current_room_id && combo[:target_id] == target_item}
         
@@ -380,13 +385,17 @@ class Game
 # ............ DISCUSSION WITH LIBERTY
 
   def talk_to
+
+    talk_to = TTY::Prompt.new
+    choices = []
+
     unless !current_cell_items.include?(18)
-      slow_type("Here are the people near you:\n")
       @items.each do |is_person|
-        puts "[#{is_person.item_id}] #{is_person.name}" if is_person.class == Person && current_cell_items.include?(is_person.item_id)
+        choices << { name: is_person.name, value: is_person.item_id } if is_person.class == Person && current_cell_items.include?(is_person.item_id)
       end
-      slow_type("\nWho do you want to talk to?")
-      input = gets.chomp.to_i
+    
+    input = talk_to.select(slow_type("\nWho do you want to talk to?"), choices)
+
       if input == 18
         liberty_discussion
       else
@@ -563,7 +572,7 @@ class Game
 
 # .......... SET DEBUG TO TRUE IF CODE BUILDING/DEBUGGING
 
-    @debug = true
+    @debug = false
 
   end
 
@@ -580,41 +589,38 @@ class Game
       @starting_game_text = false
       
       slow_type("\nYou are in #{find_room_by_id(@current_room_id).name}")
-      slow_type("What would you like to do?\n")
-      
-      # print out players command options
+      main_menu = TTY::Prompt.new
 
-      puts "[M] Move player"
-      puts "[L] Look at"
-      puts "[U] Use item"
-      puts "[P] Pick up"
-      puts "[T] Talk"
+      choices = [
+      { name: 'Move Player', value: 1 },
+      { name: 'Look At', value: 2 },
+      { name: 'Pick Up', value: 3 },
+      { name: 'Use Item', value: 4 },
+      { name: 'Talk To', value: 5 },
+      { name: 'Quit', value: 6 },
+    ]
+      attr = main_menu.select(slow_type("What would you like to do?"), choices)
 
       # gets user input
-      print "\nInput: "
-      input = gets.chomp
         
-        if input.downcase == "m"
-          player_move
-
-        elsif input.downcase == "l"
-          look_at
-
-        elsif input.downcase == "p"
-          pick_up
-
-        elsif input.downcase == "u"
-          use_item
-
-        elsif input.downcase == "t"
-          talk_to
+      if attr == 1
+        player_move
         
-        elsif input.downcase == "q"
-          @game_complete = true
+      elsif attr == 2
+        look_at
 
-        else
-          puts "\nI don't know that command\n"
-        end
+      elsif attr == 3
+        pick_up
+
+      elsif attr == 4
+        use_item
+
+      elsif attr == 5
+        talk_to
+      
+      else attr == 6
+        @game_complete = true
+      end
 
     end
   end
