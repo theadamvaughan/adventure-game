@@ -134,7 +134,7 @@ class Game
       choices << { name: room.name, value: room.id } unless room.id == @current_room_id
     end
 
-    input = move.select("Where would you like to move to?", choices)
+    input = move.select(slow_type("Where would you like to move to?"), choices)
 
     pause(0.5)
 
@@ -302,7 +302,7 @@ class Game
   def look_at_inventory
 
     if @inventory.empty?
-      puts "You don't have anything in your inventory"
+      slow_type("\nYou don't have anything in your inventory")
     else
       print_inventory_items
     end
@@ -339,21 +339,11 @@ class Game
         choices << { name: inventory_item.name, value: inventory_item.item_id }
       end
 
-      item_id = use_item.select("\nWhat would you like to use?", choices)
+      item_id = use_item.select(slow_type("\nWhat would you like to use?"), choices)
       
       selected_item = find_item_by_id(item_id)
 
       if @inventory.include?(item_id)
-        slow_type("\nWhat would you like to use the #{selected_item.name} on?\n")
-
-        print_out_room_items
-
-        print "\nUse #{selected_item.name} on: "
-
-      current_cell_items.each do |item_id|
-        item = find_item_by_id(item_id)
-        puts "#{item.name}" unless @inventory.include?(item.item_id) || item.show_item == false || item.class == Person
-      end
     
         use_on = TTY::Prompt.new
 
@@ -364,7 +354,7 @@ class Game
           choices << { name: item.name, value: item.item_id } unless @inventory.include?(item.item_id) || item.show_item == false || item.class == Person
         end
 
-        target_item = use_on.select("\nWhat would you like to use?", choices)
+        target_item = use_on.select(slow_type("\nWhat would you like to use the #{selected_item.name} on?"), choices)
 
         combo = @use_combos.find { |combo| combo[:item_id] == item_id && combo[:usage_location] == @current_room_id && combo[:target_id] == target_item}
         
@@ -419,7 +409,6 @@ class Game
     choices = []
 
     unless !current_cell_items.include?(18)
-      slow_type("Here are the people near you:\n")
       @items.each do |is_person|
         choices << { name: is_person.name, value: is_person.item_id } if is_person.class == Person && current_cell_items.include?(is_person.item_id)
       end
@@ -629,14 +618,13 @@ class Game
       { name: 'Talk To', value: 5 },
       { name: 'Quit', value: 6 },
     ]
-      attr = main_menu.select("What would you like to do?", choices)
+      attr = main_menu.select(slow_type("What would you like to do?"), choices)
 
       # gets user input
         
       if attr == 1
         player_move
         
-
       elsif attr == 2
         look_at
 
