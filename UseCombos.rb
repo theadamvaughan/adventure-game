@@ -220,10 +220,17 @@ class Game
       item = find_item_by_id(item_id)
       puts "[#{item.item_id}] #{item.name}" unless @inventory.include?(item.item_id) || item.show_item == false || item.class == Person
     end
+    
+    pick_up = TTY::Prompt.new
 
-    slow_type("\nWhat would you like to pick up?\n")
-    print "Pick up: "
-    input = gets.chomp.to_i
+    choices = []
+    @options = []
+    current_cell_items.each do |item_id|
+      item = find_item_by_id(item_id)
+      choices << { name: item.name, value: item.item_id } unless @inventory.include?(item.item_id) || item.show_item == false || item.class == Person
+    end
+    
+    input = pick_up.select(slow_type("\nWhat would you like to pick up?\n"), choices)
 
     # RUN PICK UP RULES TO CHECK IF WE CAN PICK IT UP
 
@@ -322,11 +329,18 @@ class Game
 
     else
       print_inventory_items
+
+      use_item = TTY::Prompt.new
+
+      choices = []
+      @options = []
+      @inventory.each do |item_id|
+      inventory_item = find_item_by_id(item_id)
+        choices << { name: inventory_item.name, value: inventory_item.item_id }
+      end
+
+      item_id = use_item.select("\nWhat would you like to use?", choices)
       
-      slow_type("\nWhat would you like to use?")
-      
-      print "\nUse item: "
-      item_id = gets.chomp.to_i
       selected_item = find_item_by_id(item_id)
 
       if @inventory.include?(item_id)
@@ -336,7 +350,21 @@ class Game
 
         print "\nUse #{selected_item.name} on: "
 
-        target_item = gets.chomp.to_i
+      current_cell_items.each do |item_id|
+        item = find_item_by_id(item_id)
+        puts "[#{item.item_id}] #{item.name}" unless @inventory.include?(item.item_id) || item.show_item == false || item.class == Person
+      end
+    
+        use_on = TTY::Prompt.new
+
+        choices = []
+        @options = []
+        current_cell_items.each do |item_id|
+          item = find_item_by_id(item_id)
+          choices << { name: item.name, value: item.item_id } unless @inventory.include?(item.item_id) || item.show_item == false || item.class == Person
+        end
+
+        target_item = use_on.select("\nWhat would you like to use?", choices)
 
         combo = @use_combos.find { |combo| combo[:item_id] == item_id && combo[:usage_location] == @current_room_id && combo[:target_id] == target_item}
         
