@@ -144,16 +144,13 @@ class Game
     elsif @options.include?(input) && find_room_by_id(input.to_i).isLocked
         slow_type("You cannot get to #{find_room_by_id(input.to_i).name}. it is currently locked")
 
-    elsif @options.include?(input) && !find_room_by_id(@current_room_id).isLocked
+    else @options.include?(input) && !find_room_by_id(@current_room_id).isLocked
 
         @current_room_id = input
         slow_type("\nYou have moved to #{find_room_by_id(@current_room_id).name}")
         slow_type("#{find_room_by_id(@current_room_id).description}")
         additional_text
-    elsif input.to_s.downcase == "q"
-      @game_complete = true
 
-    else
       slow_type("I don't know that command\n")
     end
 
@@ -224,7 +221,6 @@ class Game
     pick_up = TTY::Prompt.new
 
     choices = []
-    @options = []
     current_cell_items.each do |item_id|
       item = find_item_by_id(item_id)
       choices << { name: item.name, value: item.item_id } unless @inventory.include?(item.item_id) || item.show_item == false || item.class == Person
@@ -234,19 +230,11 @@ class Game
 
     # RUN PICK UP RULES TO CHECK IF WE CAN PICK IT UP
 
-    if @inventory.include?(input) || input == 0
-      slow_type("\nI don't know that command.")
-
-    elsif find_item_by_id(input).show_item == false
-      slow_type("\nI don't know that command.")
-    
-    elsif current_cell_items.include?(input) && !@inventory.include?(input)
+    if  current_cell_items.include?(input) && !@inventory.include?(input)
       pick_up_checks(input)
 
-    elsif current_cell_items.include?(input) && !@inventory.include?(input)
+    else current_cell_items.include?(input) && !@inventory.include?(input)
       put_item_in_inventory(input)
-    else
-      slow_type("\nI don't know that command.")
     end
   end
 
@@ -285,16 +273,9 @@ class Game
     if input == 1
       look_at_inventory
 
-    elsif input == 2
+    else input == 2
       slow_type("\nHere's what's in #{find_room_by_id(@current_room_id).name}:\n")
       print_out_room_items
-
-    elsif input.downcase == "q"
-      @game_complete = true
-    
-    else 
-      slow_type("\nI don't know that command")
-      look_at
     end
 
   end
@@ -637,11 +618,8 @@ class Game
       elsif attr == 5
         talk_to
       
-      elsif attr == 6
+      else attr == 6
         @game_complete = true
-
-      else
-        puts "\nI don't know that command\n"
       end
 
     end
