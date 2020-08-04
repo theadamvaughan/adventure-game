@@ -101,9 +101,9 @@ class Game
 
   def game_complete_text
     slow_type("\nCongratulations, #{@new_player_name}! You have found your way out!")
-    pause(0.5)
+    pause(0.3)
     slow_type("Written, developed and coded by Adam Vaughan and Danny Smith.")
-    pause(0.5)
+    pause(0.3)
     slow_type("Stayed tuned for more levels!")
   end
 
@@ -136,7 +136,7 @@ class Game
 
     input = move.select(slow_type("Where would you like to move to?"), choices)
 
-    pause(0.5)
+    pause(0.3)
 
     if @options.include?(input) && find_room_by_id(@current_room_id).isLocked
       slow_type("#{find_room_by_id(@current_room_id).name} is locked, you'll need to find a way out") 
@@ -152,7 +152,6 @@ class Game
       additional_text
 
     end
-
   end
 
 # ......FINDING ROOMS
@@ -187,7 +186,6 @@ class Game
       item = find_item_by_id(item_id)
       puts "#{item.name} - #{item.description}" unless @inventory.include?(item.item_id) || item.show_item == false || item.class == Person
     end
-
   end
 
 # ....... CODE ADDS ITEMS INTO YOUR INVENTORY
@@ -203,7 +201,6 @@ class Game
     else
       slow_type("You cannot pick up this item")
     end
-
   end
 
 # ......THE CODE THAT MAKES YOU PICK THINGS UP
@@ -322,7 +319,6 @@ class Game
       item_id = use_item.select(slow_type("\nWhat would you like to use?"), choices)
       
       selected_item = find_item_by_id(item_id)
-
     
       use_on = TTY::Prompt.new
 
@@ -361,7 +357,6 @@ class Game
       end
     
     find_item_by_id(input)
-    # when we use an item it might need to change the pick_up_dependency
     end
     
   end
@@ -387,7 +382,6 @@ class Game
       end
     
       input = talk_to.select(slow_type("\nWho do you want to talk to?"), choices)
-
       liberty_discussion if input == 18
 
     else
@@ -438,44 +432,31 @@ class Game
 
         find_liberty_dialogue(@talk_id)
 
-        # Conversation stops when it gets to the end. set conversation_complete to tru so you don't have to go through the same dialogue
-        # The bobby pin becomes viewable
-        # sets the @talk_id to 21
-
         if @talk_id == 19
-
           find_liberty_dialogue(@talk_id)
           @liberty_discussion_is_complete = true
           find_item_by_id(8).show_item = true
           @talk_id = 20
-
         end
+
       end
       # reset_game sets the dialogue tree to 18 so you can ask for another bobby pin
 
     elsif find_room_by_id(10).isLocked == false
       
       @talk_id = 21
-
       find_liberty_dialogue(@talk_id)
 
     elsif @talk_id == 18
 
       until @talk_id == 20
-
         find_liberty_dialogue(@talk_id)
         find_item_by_id(8).show_item = true
-
       end
 
-      # If @talk_id is 20
-
     else @talk_id == 20
-
       find_liberty_dialogue(@talk_id)
-
     end
-
   end
 
 # ............ RESET GAME AND GAME COMPLETE CODE
@@ -614,7 +595,6 @@ class Game
   end
 
 end
-
 
 game = Game.new
 game.play
