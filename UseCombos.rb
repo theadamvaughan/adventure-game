@@ -139,19 +139,18 @@ class Game
     pause(0.5)
 
     if @options.include?(input) && find_room_by_id(@current_room_id).isLocked
-        slow_type("#{find_room_by_id(@current_room_id).name} is locked, you'll need to find a way out") 
+      slow_type("#{find_room_by_id(@current_room_id).name} is locked, you'll need to find a way out") 
 
     elsif @options.include?(input) && find_room_by_id(input.to_i).isLocked
-        slow_type("You cannot get to #{find_room_by_id(input.to_i).name}. it is currently locked")
+      slow_type("You cannot get to #{find_room_by_id(input.to_i).name}. it is currently locked")
 
     else @options.include?(input) && !find_room_by_id(@current_room_id).isLocked
 
-        @current_room_id = input
-        slow_type("\nYou have moved to #{find_room_by_id(@current_room_id).name}")
-        slow_type("#{find_room_by_id(@current_room_id).description}")
-        additional_text
+      @current_room_id = input
+      slow_type("\nYou have moved to #{find_room_by_id(@current_room_id).name}")
+      slow_type("#{find_room_by_id(@current_room_id).description}")
+      additional_text
 
-      slow_type("I don't know that command\n")
     end
 
   end
@@ -324,39 +323,32 @@ class Game
       
       selected_item = find_item_by_id(item_id)
 
-      if @inventory.include?(item_id)
     
-        use_on = TTY::Prompt.new
+      use_on = TTY::Prompt.new
 
-        choices = []
-        @options = []
-        current_cell_items.each do |item_id|
-          item = find_item_by_id(item_id)
-          choices << { name: item.name, value: item.item_id } unless @inventory.include?(item.item_id) || item.show_item == false || item.class == Person
-        end
+      choices = []
+      @options = []
+      current_cell_items.each do |item_id|
+        item = find_item_by_id(item_id)
+        choices << { name: item.name, value: item.item_id } unless @inventory.include?(item.item_id) || item.show_item == false || item.class == Person
+      end
 
-        target_item = use_on.select(slow_type("\nWhat would you like to use the #{selected_item.name} on?"), choices)
+      target_item = use_on.select(slow_type("\nWhat would you like to use the #{selected_item.name} on?"), choices)
 
-        combo = @use_combos.find { |combo| combo[:item_id] == item_id && combo[:usage_location] == @current_room_id && combo[:target_id] == target_item}
+      combo = @use_combos.find { |combo| combo[:item_id] == item_id && combo[:usage_location] == @current_room_id && combo[:target_id] == target_item}
+      
+      if combo.nil?
+        slow_type("\nYou cannot use these two items together") 
         
-        if combo.nil?
-          slow_type("\nYou cannot use these two items together") 
-          
-        else 
-          use_item_dependency(item_id)
-          slow_type(combo[:message])
+      else 
+        use_item_dependency(item_id)
+        slow_type(combo[:message])
 
-          if combo[:cell_to_unlock]
-            find_room_by_id(combo[:cell_to_unlock]).isLocked = false
-            game_complete if combo[:game_complete]
-          end
-
+        if combo[:cell_to_unlock]
+          find_room_by_id(combo[:cell_to_unlock]).isLocked = false
+          game_complete if combo[:game_complete]
         end
-        # need it to perform the action
-        # change the state of the target item if necessary
-        # remove item from inventory (sometimes)
-      else
-        slow_type("\nyou cannot use that item")
+
       end
     end
   end
@@ -394,16 +386,20 @@ class Game
         choices << { name: is_person.name, value: is_person.item_id } if is_person.class == Person && current_cell_items.include?(is_person.item_id)
       end
     
-    input = talk_to.select(slow_type("\nWho do you want to talk to?"), choices)
+      input = talk_to.select(slow_type("\nWho do you want to talk to?"), choices)
 
-      if input == 18
-        liberty_discussion
-      else
-        slow_type("I don't know that command")
-      end
+      liberty_discussion if input == 18
+
     else
       slow_type("There's no-one here for you to speak to.")
     end
+  end
+
+  def find_liberty_dialogue(input)
+    message = @liberty_conversation.find { |message| message[:talk_id] == input }
+    print "#{message[:character]}: "
+    slow_type("#{message[:message]}")
+    @talk_id = message[:next_talk_id]
   end
 
 
@@ -440,17 +436,15 @@ class Game
 
       until @liberty_discussion_is_complete == true
 
-        message = @liberty_conversation.find { |message| message[:talk_id] == @talk_id }
-        print "#{message[:character]}: "
-        slow_type("#{message[:message]}")
-        @talk_id = message[:next_talk_id]
+        find_liberty_dialogue(@talk_id)
 
         # Conversation stops when it gets to the end. set conversation_complete to tru so you don't have to go through the same dialogue
         # The bobby pin becomes viewable
         # sets the @talk_id to 21
 
-        if message[:talk_id] == 19
+        if @talk_id == 19
 
+          find_liberty_dialogue(@talk_id)
           @liberty_discussion_is_complete = true
           find_item_by_id(8).show_item = true
           @talk_id = 20
@@ -460,20 +454,16 @@ class Game
       # reset_game sets the dialogue tree to 18 so you can ask for another bobby pin
 
     elsif find_room_by_id(10).isLocked == false
+      
       @talk_id = 21
 
-      message = @liberty_conversation.find { |message| message[:talk_id] == @talk_id }
-      print "#{message[:character]}: "
-      slow_type("#{message[:message]}")
+      find_liberty_dialogue(@talk_id)
 
     elsif @talk_id == 18
 
       until @talk_id == 20
 
-        message = @liberty_conversation.find { |message| message[:talk_id] == @talk_id }
-        print "#{message[:character]}: "
-        slow_type("#{message[:message]}")
-        @talk_id = message[:next_talk_id]
+        find_liberty_dialogue(@talk_id)
         find_item_by_id(8).show_item = true
 
       end
@@ -482,9 +472,7 @@ class Game
 
     else @talk_id == 20
 
-      message = @liberty_conversation.find { |message| message[:talk_id] == @talk_id }
-      print "#{message[:character]}: "
-      slow_type("#{message[:message]}")
+      find_liberty_dialogue(@talk_id)
 
     end
 
