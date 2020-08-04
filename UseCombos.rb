@@ -536,7 +536,6 @@ class Game
     @game_complete = false
     @current_room_id = 9
     @starting_game_text = true
-    @current_cell_items = @cell1_items
     @liberty_discussion_is_complete = false
 
 # .......... SET DEBUG TO TRUE IF CODE BUILDING/DEBUGGING
