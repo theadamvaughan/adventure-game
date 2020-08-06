@@ -343,6 +343,10 @@ class Game
         if combo[:cell_to_unlock]
           find_room_by_id(combo[:cell_to_unlock]).isLocked = false
           game_complete if combo[:game_complete]
+
+        elsif
+          combo[:knocked_out]
+          @guard_is_knocked_out = true
         end
 
       end
@@ -394,7 +398,7 @@ class Game
     end
   end
 
-  def find_current_dialogue_items
+  def find_liberty_dialogue_items
     @liberty_conversation.select {|dialogue| dialogue[:talk_id] == @talk_id }.each_with_index do |dialogue, i|
       dialogue[:id] = i
     end
@@ -438,8 +442,8 @@ class Game
 
     until @liberty_discussion_is_complete == true
 
-      if find_current_dialogue_items.size == 1
-        print_character_message(find_current_dialogue_items[0])
+      if find_liberty_dialogue_items.size == 1
+        print_character_message(find_liberty_dialogue_items[0])
         if @talk_id == 19
           @liberty_discussion_is_complete = true
           find_item_by_id(8).show_item = true
@@ -447,12 +451,12 @@ class Game
 
       else
         choices = []
-        find_current_dialogue_items.each do |dialogue|
+        find_liberty_dialogue_items.each do |dialogue|
           choices << { name: dialogue[:short], value: dialogue[:id] }
         end
 
         chosen_dialogue = TTY::Prompt.new.select(slow_type("\nWhat would you like to say: "), choices)
-        message = find_current_dialogue_items.find { |message| message[:id] == chosen_dialogue}
+        message = find_liberty_dialogue_items.find { |message| message[:id] == chosen_dialogue}
         print_character_message(message)
 
       end
@@ -461,42 +465,75 @@ class Game
     if find_room_by_id(10).isLocked == false
       
       @talk_id = 21
-      print_character_message(find_current_dialogue_items[0])
+      print_character_message(find_liberty_dialogue_items[0])
 
     elsif @talk_id == 18
 
       until @talk_id == 20
-        print_character_message(find_current_dialogue_items[0])
+        print_character_message(find_liberty_dialogue_items[0])
         find_item_by_id(8).show_item = true
       end
 
     else @talk_id == 20
-      print_character_message(find_current_dialogue_items[0])
+      print_character_message(find_liberty_dialogue_items[0])
     end
 
   end
 
-  # def guard_discussion
+  def find_guard_dialogue_items
+    @guard_conversation.select {|dialogue| dialogue[:guard_talk_id] == @guard_talk_id }.each_with_index do |dialogue, i|
+      dialogue[:id] = i
+    end
+  end
 
-  #   @guard_talk_id = 1
+  def print_guard_message(message)
+    print "#{message[:character]}: "
+    slow_type("#{message[:message]}")
+    @guard_talk_id = message[:next_talk_id]
+  end
 
-  #   @guard_conversation = [
+  def guard_discussion
 
-  #     { guard_talk_id: 1, next_talk_id: 2, character: @new_player_name, message: "Hello!" },
-  #     { guard_talk_id: 2, next_talk_id: 0, character: "Prison Guard", message: "Hey! You're not suppose to be out of your cell! Get back in there!" },
-  #     { guard_talk_id: 3, next_talk_id: 3, character: "Prison Guard", message: "zzzz" },
-  #   ]
+    @guard_conversation = [
 
-  #   if @guard_is_knocked_out == false
-      
-  #     @guard_talk_id = 1
+      { guard_talk_id: 1, next_talk_id: 2, character: @new_player_name, short: "Hello!", message: "Excuse me..." },
+      { guard_talk_id: 1, next_talk_id: 2, character: @new_player_name, short: "Oi", message: "Alright dick face..." }, 
+      { guard_talk_id: 2, next_talk_id: 0, character: "Prison Guard", message: "Hey! You're not suppose to be out of your cell! Get back in there!" },
+      { guard_talk_id: 3, next_talk_id: 3, character: "Prison Guard", message: "zzzz" },
+    ]
 
-  #     message = @liberty_conversation.find { |message| message[:talk_id] == @guard_is_knocked_out}
-  #     print "#{message[:character]}: "
-  #     slow_type("#{message[:message]}")
-  #     @talk_id = message[:next_talk_id]
+    @guard_talk_id = 1 unless @guard_is_knocked_out == true
+
+    until @guard_is_knocked_out == true || @guard_talk_id == 0
+
+      if find_guard_dialogue_items.size == 1
+
+        print_guard_message(find_guard_dialogue_items[0])
+        if @guard_talk_id == 0
+          reset_game
+        end
+
+      else
+
+        choices = []
+        find_guard_dialogue_items.each do |dialogue|
+          choices << { name: dialogue[:short], value: dialogue[:id] }
+        end
+
+        chosen_dialogue = TTY::Prompt.new.select(slow_type("\nWhat would you like to say: "), choices)
+        message = find_guard_dialogue_items.find { |message| message[:id] == chosen_dialogue}
+        print_guard_message(message)
+
+      end
     
-  # end
+    end
+
+    if @guard_is_knocked_out == true
+      @guard_talk_id = 3
+      print_guard_message(find_guard_dialogue_items[0])
+    end
+
+  end
 
 # ............ RESET GAME AND GAME COMPLETE CODE
 
@@ -548,7 +585,7 @@ class Game
     @use_combos = [
       { item_id: 8, target_id: 14, usage_location: 9, message: "\nYou have used the Bobby Pin to unlock your Cell. You gently open the door so you do not wake up the guard.", cell_to_unlock: 9},
       { item_id: 5, target_id: 1, usage_location: 9, message: "\nYou have used the Cheese Sandwich to tempt the Mouse over to you. He seems fairly calm eating the cheese." },
-      { item_id: 1, target_id: 6, usage_location: 12, message: "\nYou take the Mouse out of your pocket and it runs towards the guard. The guard screams and runs directly into the wall, knocking himself out"},
+      { item_id: 1, target_id: 6, usage_location: 12, message: "\nYou take the Mouse out of your pocket and it runs towards the guard. The guard screams and runs directly into the wall, knocking himself out", knocked_out: true},
       { item_id: 7, target_id: 15, usage_location: 12, message: "\nYou use the Prison Keys to open the cell 2 and set Liberty free", cell_to_unlock: 10 },
       { item_id: 7, target_id: 17, usage_location: 12, message: "\nYou use the Prison Keys to open the main Prison Hallway door. You escape to level 2...", cell_to_unlock: 13, game_complete: true }
     ]
@@ -576,7 +613,8 @@ class Game
     @current_room_id = 9
     @starting_game_text = true
     @liberty_discussion_is_complete = false
-    @guard_discussion = false
+    @guard_is_knocked_out = false
+
 
 # .......... SET DEBUG TO TRUE IF CODE BUILDING/DEBUGGING
 
