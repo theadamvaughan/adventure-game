@@ -326,7 +326,7 @@ class Game
       @options = []
       current_cell_items.each do |item_id|
         item = find_item_by_id(item_id)
-        choices << { name: item.name, value: item.item_id } unless @inventory.include?(item.item_id) || item.show_item == false || item.class == Person
+        choices << { name: item.name, value: item.item_id } unless @inventory.include?(item.item_id) || item.show_item == false
       end
 
       target_item = use_on.select(slow_type("\nWhat would you like to use the #{selected_item.name} on?"), choices)
@@ -382,26 +382,36 @@ class Game
       end
     
       input = talk_to.select(slow_type("\nWho do you want to talk to?"), choices)
-      liberty_discussion if input == 18
+    
+      if input == 18
+        liberty_discussion 
+      else input == 6
+        guard_discussion
+      end
 
     else
       slow_type("There's no-one here for you to speak to.")
     end
   end
 
-  def find_liberty_dialogue(input)
-    message = @liberty_conversation.find { |message| message[:talk_id] == input }
+  def find_current_dialogue_items
+    @liberty_conversation.select {|dialogue| dialogue[:talk_id] == @talk_id }.each_with_index do |dialogue, i|
+      dialogue[:id] = i
+    end
+  end
+
+  def print_character_message(message)
     print "#{message[:character]}: "
     slow_type("#{message[:message]}")
     @talk_id = message[:next_talk_id]
   end
 
-
   def liberty_discussion
     
     @liberty_conversation = [
 
-      { talk_id: 1, next_talk_id: 2, character: @new_player_name, message: "Hey! Lady in the cell next to me! What's going on?" },
+      { talk_id: 1, next_talk_id: 2, character: @new_player_name, short: "Hey!", message: "Hey! You in the cell next to me, what's up?" },
+      { talk_id: 1, next_talk_id: 2, character: @new_player_name, short: "Psst", message: "Excuse me!, what's going on here?" },
       { talk_id: 2, next_talk_id: 3, character: "Liberty", message: "Hey there! I was wondering when you were going to wake up! My name is Liberty. What brings you here?" },
       { talk_id: 3, next_talk_id: 5, character: @new_player_name, message: "I don't know, I'm not sure how I got here. Where are we?" },
       { talk_id: 4, next_talk_id: 7, character: @new_player_name, message: "Fuck knows, all I know is that I have a pounding headache. Any idea how I got here?" },
@@ -423,41 +433,70 @@ class Game
       { talk_id: 20, next_talk_id: 20, character: "Liberty", message: "Hurry up and bust us out of here already!" },
       { talk_id: 21, next_talk_id: 21, character: "Liberty", message: "Thanks for setting me free! I owe you one!" }
     ]
-
-    if @liberty_discussion_is_complete == false
       
-      @talk_id = 1
+    @talk_id = 1 unless @liberty_discussion_is_complete == true
 
-      until @liberty_discussion_is_complete == true
+    until @liberty_discussion_is_complete == true
 
-        find_liberty_dialogue(@talk_id)
-
+      if find_current_dialogue_items.size == 1
+        print_character_message(find_current_dialogue_items[0])
         if @talk_id == 19
-          find_liberty_dialogue(@talk_id)
           @liberty_discussion_is_complete = true
           find_item_by_id(8).show_item = true
-          @talk_id = 20
         end
 
-      end
-      # reset_game sets the dialogue tree to 18 so you can ask for another bobby pin
+      else
+        choices = []
+        find_current_dialogue_items.each do |dialogue|
+          choices << { name: dialogue[:short], value: dialogue[:id] }
+        end
 
-    elsif find_room_by_id(10).isLocked == false
+        chosen_dialogue = TTY::Prompt.new.select(slow_type("\nWhat would you like to say: "), choices)
+        message = find_current_dialogue_items.find { |message| message[:id] == chosen_dialogue}
+        print_character_message(message)
+
+      end
+    end
+
+    if find_room_by_id(10).isLocked == false
       
       @talk_id = 21
-      find_liberty_dialogue(@talk_id)
+      print_character_message(find_current_dialogue_items[0])
 
     elsif @talk_id == 18
 
       until @talk_id == 20
-        find_liberty_dialogue(@talk_id)
+        print_character_message(find_current_dialogue_items[0])
         find_item_by_id(8).show_item = true
       end
 
     else @talk_id == 20
-      find_liberty_dialogue(@talk_id)
+      print_character_message(find_current_dialogue_items[0])
     end
+
   end
+
+  # def guard_discussion
+
+  #   @guard_talk_id = 1
+
+  #   @guard_conversation = [
+
+  #     { guard_talk_id: 1, next_talk_id: 2, character: @new_player_name, message: "Hello!" },
+  #     { guard_talk_id: 2, next_talk_id: 0, character: "Prison Guard", message: "Hey! You're not suppose to be out of your cell! Get back in there!" },
+  #     { guard_talk_id: 3, next_talk_id: 3, character: "Prison Guard", message: "zzzz" },
+  #   ]
+
+  #   if @guard_is_knocked_out == false
+      
+  #     @guard_talk_id = 1
+
+  #     message = @liberty_conversation.find { |message| message[:talk_id] == @guard_is_knocked_out}
+  #     print "#{message[:character]}: "
+  #     slow_type("#{message[:message]}")
+  #     @talk_id = message[:next_talk_id]
+    
+  # end
 
 # ............ RESET GAME AND GAME COMPLETE CODE
 
@@ -484,7 +523,7 @@ class Game
       Item.new("Chair", "A metal chair with 4 legs", 3, false),
       Item.new("Bed", "A metal bed with a thin pillow and a tatty waffer thin blanket", 4, false),
       Item.new("Cheese Sandwich", "A mouldy cheese sandwich. No human would want to eat this", 5, true),
-      Item.new("Prison Guard", "He's a large man, clearly been eating too many pies", 6, false),
+      Person.new("Prison Guard", "He's a large man, clearly been eating too many pies", 6, false),
       Item.new("Prison Keys", "A bunch of keys that open all the cells and the cell room main door", 7, true, false),
       Item.new("Bobby Pin", "Good for holding back hair and picking locks", 8, true, true, false),
       Item.new("Your Cell Door", "Made of steel and looks pretty sturdy", 14, false),
@@ -537,6 +576,7 @@ class Game
     @current_room_id = 9
     @starting_game_text = true
     @liberty_discussion_is_complete = false
+    @guard_discussion = false
 
 # .......... SET DEBUG TO TRUE IF CODE BUILDING/DEBUGGING
 
