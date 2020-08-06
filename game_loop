@@ -416,26 +416,43 @@ class Game
 
       { talk_id: 1, next_talk_id: 2, character: @new_player_name, short: "Hey!", message: "Hey! You in the cell next to me, what's up?" },
       { talk_id: 1, next_talk_id: 2, character: @new_player_name, short: "Psst", message: "Excuse me!, what's going on here?" },
-      { talk_id: 2, next_talk_id: 3, character: "Liberty", message: "Hey there! I was wondering when you were going to wake up! My name is Liberty. What brings you here?" },
-      { talk_id: 3, next_talk_id: 5, character: @new_player_name, message: "I don't know, I'm not sure how I got here. Where are we?" },
-      { talk_id: 4, next_talk_id: 7, character: @new_player_name, message: "Fuck knows, all I know is that I have a pounding headache. Any idea how I got here?" },
-      { talk_id: 5, next_talk_id: 6, character: "Liberty", message: "You're onboard the Spaceship Caerus. It’s a holding vessel for the Ahrimanian Empire." },
-      { talk_id: 6, next_talk_id: 7, character: @new_player_name, message: "Great. Any idea how or why I got here?" },
-      { talk_id: 7, next_talk_id: 9, character: "Liberty", message: "No idea what you have been bought in here for. Although I did hear one of the guards mutter something about finding your spaceship floating in space." },
-      { talk_id: 8, next_talk_id: 5, character: @new_player_name, message: "So what is this place?" },
-      { talk_id: 9, next_talk_id: 10, character: @new_player_name, message: "Perfect. So what did you do to end up here?" },
-      { talk_id: 10, next_talk_id: 11, character: "Liberty", message: "I got caught salvaging parts from an abandoned space outpost. It was out of their jurisdiction but they decided to pick me up anyway." },
-      { talk_id: 11, next_talk_id: 12, character: @new_player_name, message: "Looks like we're doomed. Anything I can hang myself with?" },
-      { talk_id: 12, next_talk_id: 13, character: "Liberty", message: "You could try and use my shoelaces, but I don't think that's a good idea." },
-      { talk_id: 13, next_talk_id: 14, character: @new_player_name, message: "Know of a way to get out?" },
-      { talk_id: 14, next_talk_id: 15, character: "Liberty", message: "The place looks well sealed to me. If you can find a way of getting the keys off the guards desk you can bust us out." },
-      { talk_id: 15, next_talk_id: 16, character: @new_player_name, message: "Looks too far away and there's no way of reaching it. If you have something small and thin, I could try and pick the lock on my cell door." },
-      { talk_id: 16, next_talk_id: 17, character: "Liberty", message: "My hair is held back with bobby pins, would one of those do?" },
-      { talk_id: 17, next_talk_id: 19, character: @new_player_name, message: "Yeah, that could work. Chuck one into my cell." },
-      { talk_id: 18, next_talk_id: 19, character: @new_player_name, message: "Hey, Liberty, any chance of another Bobby Pin?" },
-      { talk_id: 19, next_talk_id: 20, character: "Liberty", message: "Sure, here you go" },
-      { talk_id: 20, next_talk_id: 20, character: "Liberty", message: "Hurry up and bust us out of here already!" },
-      { talk_id: 21, next_talk_id: 21, character: "Liberty", message: "Thanks for setting me free! I owe you one!" }
+      { talk_id: 2, next_talk_id: 3, character: "Liberty", message: "Hey there! I was wondering when you were going to wake up! What's your name?" },
+
+      { talk_id: 3, next_talk_id: 4, character: @new_player_name, short: "#{@new_player_name}", message: "My name's #{@new_player_name}. Who are you?" },
+      { talk_id: 3, next_talk_id: 4, character: @new_player_name, short: "None of your business", message: "That depends on who you are..." },
+      { talk_id: 4, next_talk_id: 5, character: "Liberty", message: "My name's Liberty, I was brought in shortly before they dragged you in. What happened to you?" },
+
+      { talk_id: 5, next_talk_id: 6, character: @new_player_name, short: "Fuck knows", message: "Fuck knows, all I know is that I have a pounding headache. Where are we?" },
+      { talk_id: 5, next_talk_id: 6, character: @new_player_name, short: "No idea", message: "I have no idea. All I know is that I have a lump on my head. Where are we?" },
+      { talk_id: 6, next_talk_id: 7, character: "Liberty", message: "You're onboard the Spaceship Caerus. It’s a holding vessel for the Ahrimanian Empire." },
+
+      { talk_id: 7, next_talk_id: 9, character: @new_player_name, short: "Ahrimanian Empire?", message: "Who are the Ahrimanian Empire?" },
+      { talk_id: 7, next_talk_id: 8, character: @new_player_name, short: "Great...", message: "That's just great. Do you have any idea how or why i'm here?" },
+      { talk_id: 8, next_talk_id: 10, character: "Liberty", message: "No idea what you have been bought in here for. Although I did hear one of the guards mutter something about finding your spaceship floating in space." },
+      { talk_id: 9, next_talk_id: 10, character: "Liberty", message: "The are the self proclaimed rulers of this section of the galaxy. In short, they're bandits who think they run the joint. I heard them say that they found your ship floating in space" },
+
+      { talk_id: 10, next_talk_id: 11, character: @new_player_name, message: "They have my ship!? How will I get that back?" },
+      { talk_id: 11, next_talk_id: 12, character: "Liberty", message: "Well this appears to be a stand Ahrimanian Empire cruiser so it's probably held up in the cargo bay" },
+
+
+      { talk_id: 12, next_talk_id: 13, character: @new_player_name, short: "Perfect...", message: "Perfect. So what did you do to end up here?" },
+      { talk_id: 12, next_talk_id: 14, character: @new_player_name, short: "I'm doomed", message: "Looks like we're doomed. Anything I can hang myself with?" },
+
+      { talk_id: 13, next_talk_id: 15, character: "Liberty", message: "I got caught salvaging parts from an abandoned space outpost. It was out of their jurisdiction but they decided to pick me up anyway." },
+      { talk_id: 14, next_talk_id: 15, character: "Liberty", message: "You could try and use my shoelaces, but I don't think that's a good idea." },  
+      
+      { talk_id: 15, next_talk_id: 16, character: @new_player_name, message: "Fair enough. Do you know of a way to get out?" },
+
+      { talk_id: 16, next_talk_id: 17, character: "Liberty", message: "The place looks well sealed to me. If you can find a way of getting the keys off the guards desk you can bust us out." },
+      
+      { talk_id: 17, next_talk_id: 18, character: @new_player_name, message: "Looks too far away and there's no way of reaching it. If you have something small and thin, I could try and pick the lock on my cell door." },
+      { talk_id: 18, next_talk_id: 19, character: "Liberty", message: "My hair is held back with bobby pins, would one of those do?" },
+      { talk_id: 19, next_talk_id: 20, character: @new_player_name, message: "Yeah, that could work. Chuck one into my cell." },
+      # main Liberty conversation complete from here on
+      { talk_id: 21, next_talk_id: 20, character: @new_player_name, message: "Hey, Liberty, any chance of another Bobby Pin?" },
+      { talk_id: 20, next_talk_id: 22, character: "Liberty", message: "Sure, here you go" },
+      { talk_id: 22, next_talk_id: 22, character: "Liberty", message: "Hurry up and bust us out of here already!" },
+      { talk_id: 23, next_talk_id: 23, character: "Liberty", message: "Thanks for setting me free! I owe you one!" }
     ]
       
     @talk_id = 1 unless @liberty_discussion_is_complete == true
@@ -464,17 +481,17 @@ class Game
 
     if find_room_by_id(10).isLocked == false
       
-      @talk_id = 21
+      @talk_id = 22
       print_character_message(find_liberty_dialogue_items[0])
 
-    elsif @talk_id == 18
+    elsif @talk_id == 21
 
-      until @talk_id == 20
+      until @talk_id == 23
         print_character_message(find_liberty_dialogue_items[0])
         find_item_by_id(8).show_item = true
       end
 
-    else @talk_id == 20
+    else @talk_id == 23
       print_character_message(find_liberty_dialogue_items[0])
     end
 
